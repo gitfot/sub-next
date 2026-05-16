@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repo is a `pnpm` workspace with two apps and two shared packages. `apps/web` contains the React + Vite UI, with route screens under `src/routes`, shared app wiring under `src/app`, and browser tests in `src/routes/__tests__`. `apps/api` contains the Fastify server, with feature modules under `src/modules/*` and integration tests in `tests/`. Shared schemas and types live in `packages/shared/src`, and subscription parsing/rendering logic lives in `packages/sub-core/src`. Prisma schema and database setup are in `prisma/schema.prisma`; local container orchestration is in `deploy/docker-compose.yml`.
+This repo is a `pnpm` workspace with two apps and one shared package. `apps/web` contains the React + Vite UI, with route screens under `src/routes`, shared app wiring under `src/app`, and browser tests in `src/routes/__tests__`. `apps/api` contains the Fastify server, with feature modules under `src/modules/*` and integration tests in `tests/`. API request schemas live beside the consuming modules in `apps/api/src/modules/*`, and subscription parsing/rendering logic lives in `packages/sub-core/src`. Prisma schema and database setup are in `prisma/schema.prisma`; local container orchestration is in `deploy/docker-compose.yml`.
 
 ## Build, Test, and Development Commands
 Install dependencies with `pnpm install`. Start the apps separately with `pnpm dev:api` and `pnpm dev:web`. Run all workspace builds with `pnpm build`, all tests with `pnpm test`, and type-checking/lint gates with `pnpm lint`. Prisma helpers are root-level: `pnpm db:generate`, `pnpm db:migrate`, and `pnpm db:push`. For local infrastructure, use `docker compose -f deploy/docker-compose.yml up`.

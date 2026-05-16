@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { HomePage } from '../home-page.js';
 
@@ -17,7 +18,11 @@ describe('home page', () => {
         publicUrl: 'http://localhost:4000/subscriptions/public/demo-token',
       })));
 
-    render(<HomePage />);
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
 
     await user.type(screen.getByLabelText('节点链接'), 'vmess://demo');
     await user.type(screen.getByLabelText('优选地址'), '104.16.1.2#HK');

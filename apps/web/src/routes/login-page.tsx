@@ -31,7 +31,7 @@ export function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <Link to="/" className="logo">
-          <span>CS</span> CloudflareSub Next
+          <span>SN</span> sub-next
         </Link>
         <div className="auth-title">欢迎回来</div>
 

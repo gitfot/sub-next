@@ -6,6 +6,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile && pnpm --filter @cloudflaresub/web build
+RUN pnpm install --frozen-lockfile && pnpm --filter sub-next-web build
 
 CMD ["pnpm", "dev:web"]

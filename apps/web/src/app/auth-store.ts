@@ -3,7 +3,7 @@ export interface AuthSession {
   refreshToken?: string;
 }
 
-const STORAGE_KEY = 'cloudflaresub-next-auth';
+const STORAGE_KEY = 'sub-next-auth';
 
 export function saveSession(session: AuthSession) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(session));

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { SubscriptionManagementPage } from '../subscription-management-page.js';
 
@@ -25,7 +26,11 @@ describe('subscription management', () => {
         keepOriginalHost: true,
       })));
 
-    render(<SubscriptionManagementPage />);
+    render(
+      <MemoryRouter>
+        <SubscriptionManagementPage />
+      </MemoryRouter>,
+    );
 
     expect(await screen.findByText('测试订阅')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '恢复' }));

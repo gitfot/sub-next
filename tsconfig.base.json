@@ -12,12 +12,6 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@cloudflaresub/shared": [
-        "packages/shared/src/index.ts"
-      ],
-      "@cloudflaresub/shared/*": [
-        "packages/shared/src/*"
-      ],
       "sub-core": [
         "packages/sub-core/src/index.ts"
       ],

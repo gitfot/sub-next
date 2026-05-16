@@ -62,12 +62,6 @@ importers:
 
   apps/api:
     dependencies:
-      '@cloudflaresub/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@cloudflaresub/sub-core':
-        specifier: workspace:*
-        version: link:../../packages/sub-core
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0
@@ -86,6 +80,9 @@ importers:
       jose:
         specifier: ^6.2.3
         version: 6.2.3
+      sub-core:
+        specifier: workspace:*
+        version: link:../../packages/sub-core
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -104,12 +101,6 @@ importers:
       react-router-dom:
         specifier: ^7.15.1
         version: 7.15.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-
-  packages/shared:
-    dependencies:
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
 
   packages/sub-core: {}
 

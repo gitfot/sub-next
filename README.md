@@ -1,13 +1,12 @@
-# CloudflareSub Next
+# sub-next
 
-Second-generation server-hosted rewrite of CloudflareSub.
+Server-hosted rewrite of the previous CloudflareSub project.
 
 ## Workspaces
 
 - `apps/web`: React homepage and data management UI
 - `apps/api`: Fastify API
-- `packages/sub-core`: migrated subscription core
-- `packages/shared`: shared schemas and types
+- `packages/sub-core`: subscription core
 
 ## First bootstrap
 

@@ -1,12 +1,12 @@
 {
-  "name": "cloudflaresub-next",
+  "name": "sub-next",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@11.1.2",
   "scripts": {
-    "dev:api": "pnpm --filter @cloudflaresub/api dev",
-    "dev:web": "pnpm --filter @cloudflaresub/web dev",
+    "dev:api": "pnpm --filter sub-next-api dev",
+    "dev:web": "pnpm --filter sub-next-web dev",
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
