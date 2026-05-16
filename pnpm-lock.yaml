@@ -62,6 +62,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@cloudflaresub/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0
