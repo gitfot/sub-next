@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
-import { renderSubscription, type ParsedNode, type SubscriptionTarget } from '@cloudflaresub/sub-core';
+import { renderSubscription, type ParsedNode } from '@cloudflaresub/sub-core';
 import type { Prisma } from '@prisma/client';
 import { db } from '../../lib/db.js';
+import type { SubscriptionTarget } from './subscription.schema.js';
 
 interface PublishSubscriptionInput {
   nodeLinkSetId?: string | undefined;

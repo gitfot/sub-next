@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { previewRequestSchema } from '@cloudflaresub/shared';
+import { previewRequestSchema } from './generator.schema.js';
 import { requireUser } from '../../plugins/require-user.js';
 import { previewSubscription } from './generator.service.js';
 
