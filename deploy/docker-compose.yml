@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_DB: cloudflaresub_next
+      POSTGRES_DB: sub_next
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
