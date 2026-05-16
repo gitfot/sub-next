@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String                 @id @default(uuid())
+  email         String                 @unique
+  username      String?                @unique
+  passwordHash  String
+  status        String                 @default("active")
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  sessions      UserSession[]
+  nodeLinkSets  NodeLinkSet[]
+  addressSets   PreferredAddressSet[]
+  subscriptions Subscription[]
+  snapshots     SubscriptionSnapshot[]
+}
+
+model UserSession {
+  id               String   @id @default(uuid())
+  userId           String
+  refreshTokenHash String
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  revokedAt        DateTime?
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model NodeLinkSet {
+  id          String                 @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  content     String                 @db.Text
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  deletedAt   DateTime?
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snapshots   SubscriptionSnapshot[]
+
+  @@index([userId])
+}
+
+model PreferredAddressSet {
+  id          String                 @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  content     String                 @db.Text
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  deletedAt   DateTime?
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snapshots   SubscriptionSnapshot[]
+
+  @@index([userId])
+}
+
+model Subscription {
+  id               String                 @id @default(uuid())
+  userId           String
+  remark           String
+  subscriptionType String
+  publicToken      String                 @unique
+  status           String                 @default("active")
+  expiresAt        DateTime
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  deletedAt        DateTime?
+  user             User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snapshots        SubscriptionSnapshot[]
+
+  @@index([userId])
+}
+
+model SubscriptionSnapshot {
+  id                      String               @id @default(uuid())
+  subscriptionId          String
+  userId                  String
+  nodeLinkSetId           String?
+  preferredAddressSetId   String?
+  nodeLinksInput          String               @db.Text
+  preferredAddressesInput String               @db.Text
+  generatorOptions        Json
+  previewNodesJson        Json
+  renderedContent         String               @db.Text
+  renderedContentEncoding String
+  createdAt               DateTime             @default(now())
+  subscription            Subscription         @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  user                    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodeLinkSet             NodeLinkSet?         @relation(fields: [nodeLinkSetId], references: [id])
+  preferredAddressSet     PreferredAddressSet? @relation(fields: [preferredAddressSetId], references: [id])
+
+  @@index([subscriptionId])
+  @@index([userId])
+}
