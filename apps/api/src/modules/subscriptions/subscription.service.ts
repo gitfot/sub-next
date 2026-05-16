@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { renderSubscription, type ParsedNode, type SubscriptionTarget } from '@cloudflaresub/sub-core';
+import type { Prisma } from '@prisma/client';
 import { db } from '../../lib/db.js';
 
 interface PublishSubscriptionInput {
@@ -20,7 +21,7 @@ export async function createSubscription(userId: string, input: PublishSubscript
   const rendered = renderSubscription(input.subscriptionType, input.previewNodes, input.publicBaseUrl);
   const publicToken = crypto.randomBytes(24).toString('hex');
 
-  return db.$transaction(async (tx) => {
+  return db.$transaction(async (tx: Prisma.TransactionClient) => {
     const subscription = await tx.subscription.create({
       data: {
         userId,

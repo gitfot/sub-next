@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { PrismaClient } from '@prisma/client';
 
 type SortOrder = 'asc' | 'desc';
 
@@ -291,4 +292,7 @@ function sortByUpdatedAt<T extends { updatedAt: Date }>(items: T[], order: SortO
   );
 }
 
-export const db = new MemoryDb();
+const memoryDb = new MemoryDb();
+const useMemoryDb = Boolean(process.env.VITEST || process.env.NODE_ENV === 'test');
+
+export const db = (useMemoryDb ? memoryDb : new PrismaClient()) as PrismaClient;
