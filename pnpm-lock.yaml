@@ -65,6 +65,9 @@ importers:
       '@cloudflaresub/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@cloudflaresub/sub-core':
+        specifier: workspace:*
+        version: link:../../packages/sub-core
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0

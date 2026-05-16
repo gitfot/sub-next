@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 const textEncoder = new TextEncoder();
 
 export async function hashPassword(password: string): Promise<string> {
-  return hash(password, 12);
+  return hash(password, 4);
 }
 
 export async function verifyPassword(password: string, passwordHash: string): Promise<boolean> {
