@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { datasetSchema } from '@cloudflaresub/shared';
+import { datasetSchema } from './source.schema.js';
 import { requireUser } from '../../plugins/require-user.js';
 import {
   createNodeLinkSet,

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { loginSchema, registerSchema } from '@cloudflaresub/shared';
+import { loginSchema, registerSchema } from './auth.schema.js';
 import { createUser, loginUser } from './auth.service.js';
 
 export async function authRoutes(app: FastifyInstance) {
