@@ -1,0 +1,36 @@
+{
+  "name": "cloudflaresub-next",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "dev:api": "pnpm --filter @cloudflaresub/api dev",
+    "dev:web": "pnpm --filter @cloudflaresub/web dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/supertest": "^7.2.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/coverage-v8": "^4.1.6",
+    "eslint": "^10.3.0",
+    "jsdom": "^29.1.1",
+    "prisma": "^6.19.3",
+    "supertest": "^7.2.2",
+    "tsx": "^4.22.0",
+    "typescript": "^5.8.3",
+    "vite": "^8.0.13",
+    "vitest": "^4.1.6"
+  }
+}
