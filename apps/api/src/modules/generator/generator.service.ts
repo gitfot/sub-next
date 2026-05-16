@@ -1,4 +1,4 @@
-import { expandNodes, parseNodeLinks, parsePreferredAddresses } from '@cloudflaresub/sub-core';
+import { expandNodes, parseNodeLinks, parsePreferredAddresses } from 'sub-core';
 
 export function previewSubscription(input: {
   nodeLinksInput: string;

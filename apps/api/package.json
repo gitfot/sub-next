@@ -1,5 +1,5 @@
 {
-  "name": "@cloudflaresub/api",
+  "name": "sub-next-api",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@cloudflaresub/sub-core": "workspace:*",
+    "sub-core": "workspace:*",
     "@cloudflaresub/shared": "workspace:*",
     "@fastify/cors": "^11.2.0",
     "@fastify/rate-limit": "^10.3.0",

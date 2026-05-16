@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { renderSubscription, type ParsedNode } from '@cloudflaresub/sub-core';
+import { renderSubscription, type ParsedNode } from 'sub-core';
 import type { Prisma } from '@prisma/client';
 import { db } from '../../lib/db.js';
 import type { SubscriptionTarget } from './subscription.schema.js';

@@ -1,5 +1,5 @@
 {
-  "name": "@cloudflaresub/sub-core",
+  "name": "sub-core",
   "private": true,
   "type": "module",
   "exports": {

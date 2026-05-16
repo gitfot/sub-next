@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { publishSubscriptionSchema } from './subscription.schema.js';
-import type { ParsedNode } from '@cloudflaresub/sub-core';
+import type { ParsedNode } from 'sub-core';
 import { getEnv } from '../../lib/env.js';
 import { requireUser } from '../../plugins/require-user.js';
 import {
