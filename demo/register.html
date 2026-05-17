@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>注册 - CloudflareSub Next</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <a href="index.html" class="logo"><span>CS</span> CloudflareSub Next</a>
+      <div class="auth-title">创建账号</div>
+
+      <form style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <label>邮箱 <span style="color:var(--danger)">*</span></label>
+          <input type="email" placeholder="your@email.com" />
+        </div>
+        <div>
+          <label>用户名</label>
+          <input type="text" placeholder="可选，用于快速登录" />
+        </div>
+        <div>
+          <label>密码 <span style="color:var(--danger)">*</span></label>
+          <input type="password" placeholder="至少 8 位字符" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="margin-top:4px">
+          注册
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        已有账号？<a href="login.html">直接登录</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

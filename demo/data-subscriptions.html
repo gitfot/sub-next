@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>订阅管理 - CloudflareSub Next</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo"><span>CS</span> CloudflareSub Next</a>
+    <nav>
+      <a href="index.html">首页</a>
+      <a href="data-node-links.html" class="active">数据管理</a>
+    </nav>
+    <div class="user-area">
+      <span style="font-size:12px;color:var(--text-2)">demo@example.com</span>
+      <div class="avatar">D</div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <a href="data-node-links.html">节点链接</a>
+    <a href="data-preferred-addresses.html">优选地址</a>
+    <a href="data-subscriptions.html" class="active">订阅管理</a>
+  </div>
+
+  <main>
+    <div class="panel" style="flex:1;overflow:hidden">
+      <div class="panel-title">已发布订阅</div>
+
+      <div class="table-wrap" style="flex:1;overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>备注</th>
+              <th>类型</th>
+              <th>创建时间</th>
+              <th>有效期至</th>
+              <th>状态</th>
+              <th style="width:200px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>我的订阅</strong></td>
+              <td><span class="badge badge-blue">Clash</span></td>
+              <td class="td-meta">2026-05-15 14:35</td>
+              <td class="td-meta">2026-06-15 00:00</td>
+              <td><span class="badge badge-green">有效</span></td>
+              <td class="td-actions">
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('detail-modal').style.display='flex'">详情</button>
+                <button class="btn btn-secondary btn-sm">复制</button>
+                <button class="btn btn-secondary btn-sm" onclick="window.location.href='index.html'">恢复</button>
+                <button class="btn btn-danger btn-sm">删除</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>测试订阅</strong></td>
+              <td><span class="badge badge-blue">V2rayN</span></td>
+              <td class="td-meta">2026-05-10 09:20</td>
+              <td class="td-meta">2026-05-10 09:20</td>
+              <td><span class="badge badge-red">已过期</span></td>
+              <td class="td-actions">
+                <button class="btn btn-secondary btn-sm">详情</button>
+                <button class="btn btn-secondary btn-sm">复制</button>
+                <button class="btn btn-secondary btn-sm">恢复</button>
+                <button class="btn btn-danger btn-sm">删除</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Shadowrocket 专用</strong></td>
+              <td><span class="badge badge-blue">Shadowrocket</span></td>
+              <td class="td-meta">2026-05-01 16:00</td>
+              <td class="td-meta">2026-08-01 00:00</td>
+              <td><span class="badge badge-green">有效</span></td>
+              <td class="td-actions">
+                <button class="btn btn-secondary btn-sm">详情</button>
+                <button class="btn btn-secondary btn-sm">复制</button>
+                <button class="btn btn-secondary btn-sm">恢复</button>
+                <button class="btn btn-danger btn-sm">删除</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Subscription Details -->
+  <div id="detail-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal" style="max-width:640px">
+      <div class="modal-header">
+        <h3>订阅详情</h3>
+        <button class="modal-close" onclick="document.getElementById('detail-modal').style.display='none'">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="col-2">
+          <div>
+            <label>备注</label>
+            <input type="text" value="我的订阅" readonly />
+          </div>
+          <div>
+            <label>订阅类型</label>
+            <input type="text" value="Clash" readonly />
+          </div>
+        </div>
+        <div class="col-2">
+          <div>
+            <label>创建时间</label>
+            <input type="text" value="2026-05-15 14:35:00" readonly />
+          </div>
+          <div>
+            <label>有效期至</label>
+            <input type="text" value="2026-06-15 00:00:00" readonly />
+          </div>
+        </div>
+        <div>
+          <label>公共链接</label>
+          <div class="result-box">
+            <input type="text" value="https://sub.example.com/subscriptions/public/abc123def456" readonly />
+            <button class="btn btn-secondary btn-sm">复制</button>
+          </div>
+        </div>
+        <div class="panel-subtitle">原始节点链接输入</div>
+        <textarea rows="3" readonly>vmess://eyJ2IjoiMiIsInBzIjoiZGVtby13cy10bHMiLCJhZGQiOiJlZGdlLmV4YW1wbGUuY29tIn0=</textarea>
+        <div class="panel-subtitle">原始优选地址输入</div>
+        <textarea rows="3" readonly>104.16.1.2#HK-01
+104.17.2.3:2053#US-02
+cf.example.com:443#JP-Edge</textarea>
+        <div class="panel-subtitle">生成器选项</div>
+        <div class="col-2">
+          <div>
+            <label>备注前缀</label>
+            <input type="text" value="CF" readonly />
+          </div>
+          <div>
+            <label>保留原 Host/SNI</label>
+            <input type="text" value="是" readonly />
+          </div>
+        </div>
+        <div class="panel-subtitle">预览节点快照（3 个）</div>
+        <div class="node-list" style="max-height:140px">
+          <div class="node-item">
+            <div><span class="name">CF | HK-01</span> <span class="meta">vmess · 104.16.1.2:443</span></div>
+          </div>
+          <div class="node-item">
+            <div><span class="name">CF | US-02</span> <span class="meta">vmess · 104.17.2.3:2053</span></div>
+          </div>
+          <div class="node-item">
+            <div><span class="name">CF | JP-Edge</span> <span class="meta">vmess · cf.example.com:443</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('detail-modal').style.display='none'">关闭</button>
+        <button class="btn btn-secondary">复制链接</button>
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">恢复到首页</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

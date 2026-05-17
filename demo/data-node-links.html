@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>节点链接 - CloudflareSub Next</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo"><span>CS</span> CloudflareSub Next</a>
+    <nav>
+      <a href="index.html">首页</a>
+      <a href="data-node-links.html" class="active">数据管理</a>
+    </nav>
+    <div class="user-area">
+      <span style="font-size:12px;color:var(--text-2)">demo@example.com</span>
+      <div class="avatar">D</div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <a href="data-node-links.html" class="active">节点链接</a>
+    <a href="data-preferred-addresses.html">优选地址</a>
+    <a href="data-subscriptions.html">订阅管理</a>
+  </div>
+
+  <main>
+    <div class="panel" style="flex:1;overflow:hidden">
+      <div class="panel-title" style="justify-content:space-between">
+        <span>节点链接数据集</span>
+        <button class="btn btn-primary" onclick="document.getElementById('modal').style.display='flex'">+ 新增节点链接</button>
+      </div>
+
+      <div class="table-wrap" style="flex:1;overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>名称</th>
+              <th>内容摘要</th>
+              <th>更新时间</th>
+              <th style="width:140px">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>常用机场 A</strong></td>
+              <td class="td-meta text-mono">vmess://eyJ2IjoiMiIsInBzIjoiSEstMDEiLCJhZGQiOiJoay5leGFtcGxlLmNvbSJ9...</td>
+              <td class="td-meta">2026-05-15 14:32</td>
+              <td class="td-actions">
+                <button class="btn btn-secondary btn-sm">编辑</button>
+                <button class="btn btn-danger btn-sm">删除</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>备用机场 B</strong></td>
+              <td class="td-meta text-mono">vless://...@us.example.com:443?...</td>
+              <td class="td-meta">2026-05-14 09:15</td>
+              <td class="td-actions">
+                <button class="btn btn-secondary btn-sm">编辑</button>
+                <button class="btn btn-danger btn-sm">删除</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>测试节点集</strong></td>
+              <td class="td-meta text-mono">trojan://...@jp.example.com:443#JP-TEST</td>
+              <td class="td-meta">2026-05-10 22:08</td>
+              <td class="td-actions">
+                <button class="btn btn-secondary btn-sm">编辑</button>
+                <button class="btn btn-danger btn-sm">删除</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Create/Edit -->
+  <div id="modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>新增节点链接数据集</h3>
+        <button class="modal-close" onclick="document.getElementById('modal').style.display='none'">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <label>名称</label>
+          <input type="text" placeholder="给数据集起个名字" />
+        </div>
+        <div>
+          <label>描述（可选）</label>
+          <input type="text" placeholder="简短描述用途" />
+        </div>
+        <div>
+          <label>节点内容</label>
+          <textarea rows="8" placeholder="vmess://...&#10;vless://...&#10;trojan://...&#10;一行一个"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('modal').style.display='none'">取消</button>
+        <button class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
