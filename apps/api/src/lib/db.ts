@@ -246,6 +246,7 @@ function createOwnedCollection<T extends BaseOwnedRecord & { name: string; descr
         [...store.values()].filter((item) => item.userId === where.userId && item.deletedAt === null),
         orderBy.updatedAt,
       ),
+    findUnique: async ({ where }: { where: { id: string } }) => store.get(where.id) ?? null,
     create: async ({
       data,
     }: {
@@ -265,12 +266,18 @@ function createOwnedCollection<T extends BaseOwnedRecord & { name: string; descr
       store.set(record.id, record);
       return record;
     },
-    updateMany: async ({ where, data }: { where: { id: string; userId: string; deletedAt: null }; data: { deletedAt: Date } }) => {
+    updateMany: async ({
+      where,
+      data,
+    }: {
+      where: { id: string; userId: string; deletedAt: null };
+      data: Partial<Pick<T, 'name' | 'description' | 'content' | 'deletedAt'>>;
+    }) => {
       const item = store.get(where.id);
       if (!item || item.userId !== where.userId || item.deletedAt !== null) {
         return { count: 0 };
       }
-      item.deletedAt = data.deletedAt;
+      Object.assign(item, data);
       item.updatedAt = new Date();
       return { count: 1 };
     },

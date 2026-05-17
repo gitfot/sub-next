@@ -11,6 +11,7 @@ export interface AuthSession {
 }
 
 const STORAGE_KEY = 'sub-next-auth';
+const AUTH_EXPIRED_EVENT = 'sub-next-auth-expired';
 
 export function saveSession(session: AuthSession) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
@@ -30,6 +31,16 @@ export function getSession(): AuthSession | null {
 
 export function clearSession() {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+export function notifyAuthExpired() {
+  clearSession();
+  window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+}
+
+export function listenForAuthExpired(listener: () => void) {
+  window.addEventListener(AUTH_EXPIRED_EVENT, listener);
+  return () => window.removeEventListener(AUTH_EXPIRED_EVENT, listener);
 }
 
 export function getSessionAccountLabel(session = getSession()): string {

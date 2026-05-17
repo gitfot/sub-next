@@ -1,10 +1,17 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { clearSession, getSessionAccountLabel } from '../app/auth-store.js';
+import { clearSession, getSessionAccountLabel, listenForAuthExpired } from '../app/auth-store.js';
 
 export function AppShell() {
   const navigate = useNavigate();
   const accountLabel = getSessionAccountLabel();
   const avatarLabel = accountLabel.slice(0, 1).toUpperCase();
+
+  useEffect(() => {
+    return listenForAuthExpired(() => {
+      navigate('/login', { replace: true });
+    });
+  }, [navigate]);
 
   function handleLogout() {
     clearSession();

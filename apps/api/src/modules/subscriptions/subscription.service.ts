@@ -22,6 +22,35 @@ function toPrismaJson(value: Prisma.InputJsonValue | ParsedNode[]) {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
+function getSubscriptionStatus(subscription: { expiresAt: Date; deletedAt: Date | null }) {
+  if (subscription.deletedAt) {
+    return 'deleted';
+  }
+  if (subscription.expiresAt < new Date()) {
+    return 'expired';
+  }
+  return 'active';
+}
+
+function buildPublicUrl(publicBaseUrl: string, publicToken: string) {
+  return `${publicBaseUrl}/subscriptions/public/${publicToken}`;
+}
+
+function mapSubscriptionListItem(
+  publicBaseUrl: string,
+  subscription: Awaited<ReturnType<typeof db.subscription.create>>,
+) {
+  return {
+    id: subscription.id,
+    remark: subscription.remark,
+    subscriptionType: subscription.subscriptionType,
+    createdAt: subscription.createdAt.toISOString(),
+    expiresAt: subscription.expiresAt.toISOString(),
+    status: getSubscriptionStatus(subscription),
+    publicUrl: buildPublicUrl(publicBaseUrl, subscription.publicToken),
+  };
+}
+
 export async function createSubscription(userId: string, input: PublishSubscriptionInput) {
   const rendered = renderSubscription(input.subscriptionType, input.previewNodes, input.publicBaseUrl);
   const publicToken = crypto.randomBytes(24).toString('hex');
@@ -76,35 +105,48 @@ export async function findLatestSnapshot(subscriptionId: string) {
   return snapshot;
 }
 
-export function listSubscriptions(userId: string) {
-  return db.subscription.findMany({
+export async function listSubscriptions(userId: string, publicBaseUrl: string) {
+  const items = await db.subscription.findMany({
     where: { userId, deletedAt: null },
     orderBy: { updatedAt: 'desc' },
   });
+  return items.map((item) => mapSubscriptionListItem(publicBaseUrl, item));
 }
 
-export async function getSubscriptionDetail(userId: string, id: string) {
+export async function getSubscriptionDetail(userId: string, id: string, publicBaseUrl: string) {
   const subscription = await db.subscription.findUnique({ where: { id } });
   if (!subscription || subscription.userId !== userId || subscription.deletedAt) {
     return null;
   }
   const snapshot = await findLatestSnapshot(subscription.id);
-  return { subscription, snapshot };
+  const options = snapshot.generatorOptions as { namePrefix?: string; keepOriginalHost?: boolean };
+  return {
+    subscription: mapSubscriptionListItem(publicBaseUrl, subscription),
+    snapshot: {
+      nodeLinksInput: snapshot.nodeLinksInput,
+      preferredAddressesInput: snapshot.preferredAddressesInput,
+      namePrefix: options.namePrefix ?? '',
+      keepOriginalHost: options.keepOriginalHost ?? true,
+      previewNodes: snapshot.previewNodesJson,
+      ...(snapshot.nodeLinkSetId ? { nodeLinkSetId: snapshot.nodeLinkSetId } : {}),
+      ...(snapshot.preferredAddressSetId ? { preferredAddressSetId: snapshot.preferredAddressSetId } : {}),
+    },
+  };
 }
 
 export async function restoreSubscriptionInput(userId: string, id: string) {
-  const detail = await getSubscriptionDetail(userId, id);
+  const detail = await getSubscriptionDetail(userId, id, 'http://restore-base-unused');
   if (!detail) {
     return null;
   }
 
-  const options = detail.snapshot.generatorOptions as { namePrefix?: string; keepOriginalHost?: boolean };
   return {
     nodeLinksInput: detail.snapshot.nodeLinksInput,
     preferredAddressesInput: detail.snapshot.preferredAddressesInput,
-    namePrefix: options.namePrefix ?? '',
-    keepOriginalHost: options.keepOriginalHost ?? true,
-    previewNodes: detail.snapshot.previewNodesJson,
+    namePrefix: detail.snapshot.namePrefix,
+    keepOriginalHost: detail.snapshot.keepOriginalHost,
+    requiresRegenerate: true,
+    restoredFromSubscriptionId: id,
     ...(detail.snapshot.nodeLinkSetId ? { nodeLinkSetId: detail.snapshot.nodeLinkSetId } : {}),
     ...(detail.snapshot.preferredAddressSetId ? { preferredAddressSetId: detail.snapshot.preferredAddressSetId } : {}),
   };

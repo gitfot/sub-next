@@ -8,6 +8,8 @@ import {
   listPreferredAddressSets,
   softDeleteNodeLinkSet,
   softDeletePreferredAddressSet,
+  updateNodeLinkSet,
+  updatePreferredAddressSet,
 } from './source.repository.js';
 
 export async function sourceRoutes(app: FastifyInstance) {
@@ -21,8 +23,20 @@ export async function sourceRoutes(app: FastifyInstance) {
     return reply.status(201).send(item);
   });
 
+  app.patch('/node-links/:id', { preHandler: requireUser }, async (request, reply) => {
+    const input = datasetSchema.parse(request.body);
+    const item = await updateNodeLinkSet(request.user.id, (request.params as { id: string }).id, input);
+    if (!item) {
+      return reply.status(404).send({ message: 'Dataset not found' });
+    }
+    return item;
+  });
+
   app.delete('/node-links/:id', { preHandler: requireUser }, async (request, reply) => {
-    await softDeleteNodeLinkSet(request.user.id, (request.params as { id: string }).id);
+    const result = await softDeleteNodeLinkSet(request.user.id, (request.params as { id: string }).id);
+    if (result.count === 0) {
+      return reply.status(404).send({ message: 'Dataset not found' });
+    }
     return reply.status(204).send();
   });
 
@@ -36,8 +50,20 @@ export async function sourceRoutes(app: FastifyInstance) {
     return reply.status(201).send(item);
   });
 
+  app.patch('/preferred-addresses/:id', { preHandler: requireUser }, async (request, reply) => {
+    const input = datasetSchema.parse(request.body);
+    const item = await updatePreferredAddressSet(request.user.id, (request.params as { id: string }).id, input);
+    if (!item) {
+      return reply.status(404).send({ message: 'Dataset not found' });
+    }
+    return item;
+  });
+
   app.delete('/preferred-addresses/:id', { preHandler: requireUser }, async (request, reply) => {
-    await softDeletePreferredAddressSet(request.user.id, (request.params as { id: string }).id);
+    const result = await softDeletePreferredAddressSet(request.user.id, (request.params as { id: string }).id);
+    if (result.count === 0) {
+      return reply.status(404).send({ message: 'Dataset not found' });
+    }
     return reply.status(204).send();
   });
 }

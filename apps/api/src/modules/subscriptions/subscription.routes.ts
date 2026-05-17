@@ -39,11 +39,13 @@ export async function subscriptionRoutes(app: FastifyInstance) {
   });
 
   app.get('/', { preHandler: requireUser }, async (request) => {
-    return { items: await listSubscriptions(request.user.id) };
+    const env = getEnv();
+    return { items: await listSubscriptions(request.user.id, env.API_BASE_URL) };
   });
 
   app.get('/:id', { preHandler: requireUser }, async (request, reply) => {
-    const detail = await getSubscriptionDetail(request.user.id, (request.params as { id: string }).id);
+    const env = getEnv();
+    const detail = await getSubscriptionDetail(request.user.id, (request.params as { id: string }).id, env.API_BASE_URL);
     if (!detail) {
       return reply.status(404).send({ message: 'Subscription not found' });
     }
@@ -51,7 +53,10 @@ export async function subscriptionRoutes(app: FastifyInstance) {
   });
 
   app.delete('/:id', { preHandler: requireUser }, async (request, reply) => {
-    await softDeleteSubscription(request.user.id, (request.params as { id: string }).id);
+    const result = await softDeleteSubscription(request.user.id, (request.params as { id: string }).id);
+    if (result.count === 0) {
+      return reply.status(404).send({ message: 'Subscription not found' });
+    }
     return reply.status(204).send();
   });
 
