@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getResponseErrorMessage } from '../app/api-errors.js';
 import { saveSession } from '../app/auth-store.js';
 
 export function LoginPage() {
@@ -18,7 +19,7 @@ export function LoginPage() {
     });
 
     if (!response.ok) {
-      setError('登录失败');
+      setError(await getResponseErrorMessage(response, '登录失败'));
       return;
     }
 

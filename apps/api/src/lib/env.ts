@@ -14,6 +14,8 @@ const envSchema = z.object({
   PUBLIC_BASE_URL: z.string().url().default('http://localhost:3000'),
   API_BASE_URL: z.string().url().default('http://localhost:4000'),
   WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  RATE_LIMIT_TIME_WINDOW: z.string().min(1).default('1 minute'),
 });
 
 let cachedEnv: z.infer<typeof envSchema> | undefined;

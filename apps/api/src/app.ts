@@ -17,8 +17,8 @@ export function buildApp() {
   });
 
   app.register(rateLimit, {
-    max: 10,
-    timeWindow: '1 minute',
+    max: env.RATE_LIMIT_MAX,
+    timeWindow: env.RATE_LIMIT_TIME_WINDOW,
     keyGenerator: (request) => request.ip,
     allowList: [],
   });

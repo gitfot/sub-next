@@ -1,13 +1,16 @@
 import { type FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getResponseErrorMessage } from '../app/api-errors.js';
 import { saveSession } from '../app/auth-store.js';
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', username: '', password: '' });
+  const [error, setError] = useState('');
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    setError('');
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -15,6 +18,7 @@ export function RegisterPage() {
     });
 
     if (!response.ok) {
+      setError(await getResponseErrorMessage(response, '注册失败'));
       return;
     }
 
@@ -52,6 +56,7 @@ export function RegisterPage() {
               onChange={(event) => setForm({ ...form, password: event.target.value })}
             />
           </div>
+          {error ? <p role="alert">{error}</p> : null}
           <button type="submit" className="btn btn-primary btn-lg">
             注册
           </button>
