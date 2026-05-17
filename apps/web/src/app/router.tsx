@@ -37,7 +37,7 @@ export const routes = [
         path: 'data',
         element: <DataPage />,
         children: [
-          { index: true, element: <NodeLinkPage /> },
+          { index: true, element: <Navigate to="node-links" replace /> },
           { path: 'node-links', element: <NodeLinkPage /> },
           { path: 'preferred-addresses', element: <PreferredAddressPage /> },
           { path: 'subscriptions', element: <SubscriptionManagementPage /> },

@@ -233,14 +233,17 @@ describe('subscription management', () => {
     expect(within(dialog).getByText('测试订阅')).toBeInTheDocument();
     expect(within(dialog).getByText('vmess://demo')).toBeInTheDocument();
     expect(within(dialog).getByText('104.16.1.2#HK')).toBeInTheDocument();
+    const subscriptionRow = screen.getByText('测试订阅').closest('tr');
+    expect(subscriptionRow).not.toBeNull();
+    expect(within(subscriptionRow as HTMLTableRowElement).queryByRole('button', { name: '复制' })).not.toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: '复制' }));
+    expect(clipboardWriteText).toHaveBeenCalledWith('http://localhost:4000/subscriptions/public/demo-token');
 
     await user.click(screen.getByRole('button', { name: '关闭' }));
     await waitFor(() => {
       expect(screen.queryByRole('dialog', { name: '订阅详情' })).not.toBeInTheDocument();
     });
-
-    await user.click(screen.getByRole('button', { name: '复制' }));
-    expect(clipboardWriteText).toHaveBeenCalledWith('http://localhost:4000/subscriptions/public/demo-token');
 
     await user.click(screen.getByRole('button', { name: '恢复' }));
 

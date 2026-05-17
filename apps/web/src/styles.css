@@ -120,14 +120,22 @@ main {
   color: var(--text);
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   flex-shrink: 0;
+  text-align: left;
 }
 .panel-title::before {
   content: '';
   width: 3px; height: 14px;
   background: var(--accent);
   border-radius: 2px;
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 .panel-subtitle {
   font-size: 12px;
@@ -296,7 +304,17 @@ tbody td {
 }
 tbody tr:hover td { background: var(--bg); }
 tbody tr:last-child td { border-bottom: none; }
-.td-actions { display: flex; gap: 4px; }
+.td-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.td-actions .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .td-meta { color: var(--text-2); font-size: 11px; }
 .badge {
   display: inline-block;
@@ -347,27 +365,50 @@ tbody tr:last-child td { border-bottom: none; }
 .tabs-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   border-right: 1px solid var(--border);
-  padding: 12px 8px;
+  margin-left: 0;
+  padding: 14px 10px 14px 14px;
   background: var(--bg);
   flex-shrink: 0;
-  width: 130px;
+  width: 164px;
 }
 .tabs-left a {
-  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
   text-decoration: none;
   color: var(--text-2);
   font-size: 13px;
   border-radius: var(--radius-sm);
   transition: all .15s;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
-.tabs-left a:hover { background: var(--card); color: var(--text); }
+.tabs-left a:hover {
+  background: var(--card);
+  color: var(--text);
+  border-color: #eef2f7;
+}
 .tabs-left a.active {
   background: var(--accent-light);
   color: var(--accent);
   font-weight: 500;
+  border-color: #dbeafe;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.tabs-left a .tab-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tabs-left a .tab-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 .data-page-body {
   flex: 1;

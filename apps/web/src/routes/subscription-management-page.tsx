@@ -105,9 +105,6 @@ export function SubscriptionManagementPage() {
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleDetail(item.id)}>
                           详情
                         </button>
-                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleCopy(item.publicUrl)}>
-                          复制
-                        </button>
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleRestore(item.id)}>
                           恢复
                         </button>

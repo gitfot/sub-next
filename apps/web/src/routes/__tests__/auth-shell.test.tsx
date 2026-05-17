@@ -43,6 +43,34 @@ describe('app shell', () => {
     expect(await screen.findByText('admin')).toBeInTheDocument();
   });
 
+  it('redirects /data to the first data tab and marks it active', async () => {
+    saveSession({
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      user: {
+        username: 'admin',
+        email: 'admin@local.test',
+      },
+    });
+
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({
+      items: [],
+    })));
+
+    const router = createMemoryRouter(routes, {
+      initialEntries: ['/data'],
+    });
+
+    render(<RouterProvider router={router} />);
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/data/node-links');
+    });
+
+    const activeLink = screen.getByRole('link', { name: '节点链接' });
+    expect(activeLink).toHaveClass('active');
+  });
+
   it('clears the session and returns to login after a 401 api response', async () => {
     saveSession({
       accessToken: 'expired-access-token',

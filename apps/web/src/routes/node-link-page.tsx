@@ -75,8 +75,8 @@ export function NodeLinkPage() {
 
   return (
     <div className="data-page-body">
-      <div className="panel-title" style={{ justifyContent: 'space-between' }}>
-        <span>节点链接数据集</span>
+      <div className="panel-header">
+        <div className="panel-title">节点链接数据集</div>
         <button type="button" className="btn btn-primary" onClick={() => { setForm(emptyForm); setIsEditing(true); }}>
           + 新增节点链接
         </button>

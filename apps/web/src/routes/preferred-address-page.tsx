@@ -75,8 +75,8 @@ export function PreferredAddressPage() {
 
   return (
     <div className="data-page-body">
-      <div className="panel-title" style={{ justifyContent: 'space-between' }}>
-        <span>优选地址数据集</span>
+      <div className="panel-header">
+        <div className="panel-title">优选地址数据集</div>
         <button type="button" className="btn btn-primary" onClick={() => { setForm(emptyForm); setIsEditing(true); }}>
           + 新增优选地址
         </button>
