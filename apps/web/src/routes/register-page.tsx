@@ -34,24 +34,25 @@ export function RegisterPage() {
     <div className="auth-page">
       <div className="auth-card">
         <Link to="/" className="logo">
-          <span>SN</span> sub-next
+          <span>CS</span> CloudflareSub Next
         </Link>
         <div className="auth-title">创建账号</div>
 
-        <form className="stack" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email">邮箱</label>
-            <input id="email" type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
+            <label htmlFor="email">邮箱 <span style={{ color: 'var(--danger)' }}>*</span></label>
+            <input id="email" type="email" placeholder="your@email.com" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
           </div>
           <div>
             <label htmlFor="username">用户名</label>
-            <input id="username" type="text" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} />
+            <input id="username" type="text" placeholder="可选，用于快速登录" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} />
           </div>
           <div>
-            <label htmlFor="register-password">密码</label>
+            <label htmlFor="register-password">密码 <span style={{ color: 'var(--danger)' }}>*</span></label>
             <input
               id="register-password"
               type="password"
+              placeholder="至少 8 位字符"
               value={form.password}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
             />

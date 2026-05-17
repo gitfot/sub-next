@@ -10,16 +10,20 @@ import {
 } from '../features/data-management/api.js';
 
 function formatDateTime(value?: string) {
-  if (!value) {
-    return '-';
-  }
-
+  if (!value) return '-';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
+  if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString('zh-CN', { hour12: false });
+}
+
+function getTypeBadgeClass(type: string) {
+  return 'badge-blue';
+}
+
+function getStatusBadge(status?: string) {
+  if (!status || status === 'active') return { label: '有效', cls: 'badge-green' };
+  if (status === 'expired') return { label: '已过期', cls: 'badge-red' };
+  return { label: status, cls: 'badge-yellow' };
 }
 
 export function SubscriptionManagementPage() {
@@ -37,20 +41,12 @@ export function SubscriptionManagementPage() {
   }, []);
 
   useEffect(() => {
-    if (!detail) {
-      return undefined;
-    }
-
+    if (!detail) return undefined;
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setDetail(null);
-      }
+      if (event.key === 'Escape') setDetail(null);
     }
-
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [detail]);
 
   async function handleDetail(id: string) {
@@ -58,9 +54,7 @@ export function SubscriptionManagementPage() {
   }
 
   async function handleCopy(publicUrl?: string) {
-    if (!publicUrl) {
-      return;
-    }
+    if (!publicUrl) return;
     await navigator.clipboard.writeText(publicUrl);
   }
 
@@ -75,144 +69,136 @@ export function SubscriptionManagementPage() {
   }
 
   const previewNodeNames = (detail?.snapshot.previewNodes ?? []).map((node, index) => {
-    if (typeof node.name === 'string' && node.name.trim()) {
-      return node.name;
-    }
+    if (typeof node.name === 'string' && node.name.trim()) return node.name;
     return `节点 ${index + 1}`;
   });
 
   return (
     <>
-      <div className="panel">
-        <div className="panel-title">订阅管理</div>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>备注</th>
-                <th>类型</th>
-                <th>创建时间</th>
-                <th>有效期至</th>
-                <th>状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.remark}</td>
-                  <td>{item.subscriptionType}</td>
-                  <td>{item.createdAt}</td>
-                  <td>{item.expiresAt}</td>
-                  <td>{item.status ?? 'active'}</td>
-                  <td className="td-actions">
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleDetail(item.id)}>
-                      详情
-                    </button>
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleCopy(item.publicUrl)}>
-                      复制
-                    </button>
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleRestore(item.id)}>
-                      恢复
-                    </button>
-                    <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>
-                      删除
-                    </button>
-                  </td>
+      <div className="data-page-body">
+        <div className="panel-title">已发布订阅</div>
+
+        {items.length ? (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>备注</th>
+                  <th>类型</th>
+                  <th>创建时间</th>
+                  <th>有效期至</th>
+                  <th>状态</th>
+                  <th style={{ width: 200 }}>操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {items.map((item) => {
+                  const status = getStatusBadge(item.status);
+                  return (
+                    <tr key={item.id}>
+                      <td><strong>{item.remark}</strong></td>
+                      <td><span className={`badge ${getTypeBadgeClass(item.subscriptionType)}`}>{item.subscriptionType}</span></td>
+                      <td className="td-meta">{item.createdAt}</td>
+                      <td className="td-meta">{item.expiresAt}</td>
+                      <td><span className={`badge ${status.cls}`}>{status.label}</span></td>
+                      <td className="td-actions">
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleDetail(item.id)}>
+                          详情
+                        </button>
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleCopy(item.publicUrl)}>
+                          复制
+                        </button>
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleRestore(item.id)}>
+                          恢复
+                        </button>
+                        <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>
+                          删除
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty-state">
+            <p>暂无已发布订阅。</p>
+          </div>
+        )}
       </div>
 
       {detail ? (
-        <div className="modal-backdrop" role="presentation" onClick={() => setDetail(null)}>
-          <section
-            className="modal subscription-detail-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="subscription-detail-title"
-            onClick={(event) => event.stopPropagation()}
-          >
+        <div className="modal-overlay" role="presentation" onClick={() => setDetail(null)}>
+          <div className="modal" style={{ maxWidth: 640 }} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
-              <div>
-                <div className="modal-eyebrow">历史订阅记录</div>
-                <h2 id="subscription-detail-title" className="modal-title">
-                  订阅详情
-                </h2>
-              </div>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setDetail(null)}>
-                关闭
-              </button>
+              <h3>订阅详情</h3>
+              <button type="button" className="modal-close" onClick={() => setDetail(null)}>&times;</button>
             </div>
-
-            <div className="subscription-detail-hero">
-              <div>
-                <div className="subscription-detail-name">{detail.subscription.remark}</div>
-                <div className="subscription-detail-subtitle">
-                  {detail.subscription.subscriptionType}
-                  {' · '}
-                  {detail.subscription.status ?? 'active'}
+            <div className="modal-body">
+              <div className="col-2">
+                <div>
+                  <label>备注</label>
+                  <input type="text" value={detail.subscription.remark} readOnly />
+                </div>
+                <div>
+                  <label>订阅类型</label>
+                  <input type="text" value={detail.subscription.subscriptionType} readOnly />
+                </div>
+              </div>
+              <div className="col-2">
+                <div>
+                  <label>创建时间</label>
+                  <input type="text" value={formatDateTime(detail.subscription.createdAt)} readOnly />
+                </div>
+                <div>
+                  <label>有效期至</label>
+                  <input type="text" value={formatDateTime(detail.subscription.expiresAt)} readOnly />
                 </div>
               </div>
               {detail.subscription.publicUrl ? (
-                <div className="subscription-detail-url">
-                  <span className="detail-label">公开链接</span>
-                  <code>{detail.subscription.publicUrl}</code>
+                <div>
+                  <label>公共链接</label>
+                  <div className="result-box">
+                    <input type="text" value={detail.subscription.publicUrl} readOnly />
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleCopy(detail.subscription.publicUrl)}>复制</button>
+                  </div>
                 </div>
               ) : null}
-            </div>
-
-            <div className="subscription-detail-grid">
-              <div className="detail-card">
-                <span className="detail-label">创建时间</span>
-                <strong>{formatDateTime(detail.subscription.createdAt)}</strong>
-              </div>
-              <div className="detail-card">
-                <span className="detail-label">有效期至</span>
-                <strong>{formatDateTime(detail.subscription.expiresAt)}</strong>
-              </div>
-              <div className="detail-card">
-                <span className="detail-label">备注前缀</span>
-                <strong>{detail.snapshot.namePrefix || '-'}</strong>
-              </div>
-              <div className="detail-card">
-                <span className="detail-label">保留原 Host/SNI</span>
-                <strong>{detail.snapshot.keepOriginalHost ? '是' : '否'}</strong>
-              </div>
-            </div>
-
-            {previewNodeNames.length ? (
-              <div className="detail-section">
-                <div className="detail-section-header">
-                  <h3>预览节点</h3>
-                  <span>{previewNodeNames.length} 个</span>
+              <div className="panel-subtitle">原始节点链接输入</div>
+              <textarea rows={3} value={detail.snapshot.nodeLinksInput || '-'} readOnly />
+              <div className="panel-subtitle">原始优选地址输入</div>
+              <textarea rows={3} value={detail.snapshot.preferredAddressesInput || '-'} readOnly />
+              <div className="panel-subtitle">生成器选项</div>
+              <div className="col-2">
+                <div>
+                  <label>备注前缀</label>
+                  <input type="text" value={detail.snapshot.namePrefix || '-'} readOnly />
                 </div>
-                <div className="detail-chip-list">
-                  {previewNodeNames.map((name) => (
-                    <span key={name} className="detail-chip">
-                      {name}
-                    </span>
-                  ))}
+                <div>
+                  <label>保留原 Host/SNI</label>
+                  <input type="text" value={detail.snapshot.keepOriginalHost ? '是' : '否'} readOnly />
                 </div>
               </div>
-            ) : null}
-
-            <div className="detail-section">
-              <div className="detail-section-header">
-                <h3>节点链接原文</h3>
-              </div>
-              <pre className="detail-code-block">{detail.snapshot.nodeLinksInput || '-'}</pre>
+              {previewNodeNames.length ? (
+                <>
+                  <div className="panel-subtitle">预览节点快照（{previewNodeNames.length} 个）</div>
+                  <div className="node-list" style={{ maxHeight: 140 }}>
+                    {previewNodeNames.map((name) => (
+                      <div key={name} className="node-item">
+                        <div><span className="name">{name}</span></div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
             </div>
-
-            <div className="detail-section">
-              <div className="detail-section-header">
-                <h3>优选地址原文</h3>
-              </div>
-              <pre className="detail-code-block">{detail.snapshot.preferredAddressesInput || '-'}</pre>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-ghost" onClick={() => setDetail(null)}>关闭</button>
+              <button type="button" className="btn btn-secondary" onClick={() => handleCopy(detail.subscription.publicUrl)}>复制链接</button>
+              <button type="button" className="btn btn-primary" onClick={async () => { const payload = await restoreSubscription(detail.subscription.id); navigate('/', { state: payload, replace: true }); }}>恢复到首页</button>
             </div>
-          </section>
+          </div>
         </div>
       ) : null}
     </>

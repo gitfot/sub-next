@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   loadHomeDraft,
   saveHomeDraft,
@@ -22,8 +22,17 @@ interface RestoreState {
   requiresRegenerate?: boolean;
 }
 
+function getTagClass(type: string) {
+  const t = type.toLowerCase();
+  if (t.includes('vmess')) return 'tag-vmess';
+  if (t.includes('vless')) return 'tag-vless';
+  if (t.includes('trojan')) return 'tag-trojan';
+  return '';
+}
+
 export function HomePage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const restoreState = (location.state as RestoreState | null) ?? null;
   const baseDraft = loadHomeDraft();
   const initialDraft: HomeDraft = {
@@ -52,6 +61,11 @@ export function HomePage() {
   const [publicUrl, setPublicUrl] = useState('');
   const [requiresRegenerate, setRequiresRegenerate] = useState(initialDraft.requiresRegenerate);
   const expiresAt = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), []);
+
+  const preferredCount = useMemo(
+    () => preferredAddressesInput.split('\n').filter((l) => l.trim()).length,
+    [preferredAddressesInput],
+  );
 
   useEffect(() => {
     void Promise.all([
@@ -147,16 +161,21 @@ export function HomePage() {
     }
   }
 
+  async function handleCopyUrl() {
+    if (!publicUrl) return;
+    await navigator.clipboard.writeText(publicUrl);
+  }
+
   return (
-    <div className="home-layout">
+    <div className="main-grid">
       <section className="panel">
         <div className="panel-title">输入配置</div>
         <div>
           <label htmlFor="node-link-set">节点链接来源</label>
           <select id="node-link-set" aria-label="节点链接来源" value={nodeLinkSetId} onChange={(event) => applyNodeDataset(event.target.value)}>
-            <option value="">手动输入</option>
+            <option value="">直接粘贴</option>
             {nodeDatasets.map((item) => (
-              <option key={item.id} value={item.id}>{item.name}</option>
+              <option key={item.id} value={item.id}>数据集：{item.name}</option>
             ))}
           </select>
         </div>
@@ -165,6 +184,8 @@ export function HomePage() {
           <textarea
             id="node-links"
             aria-label="节点链接"
+            rows={6}
+            placeholder="vmess://... vless://... trojan://...&#10;一行一个，支持 base64 订阅内容"
             value={nodeLinksInput}
             onChange={(event) => setNodeLinksInput(event.target.value)}
           />
@@ -177,9 +198,9 @@ export function HomePage() {
             value={preferredAddressSetId}
             onChange={(event) => applyPreferredDataset(event.target.value)}
           >
-            <option value="">手动输入</option>
+            <option value="">直接粘贴</option>
             {preferredDatasets.map((item) => (
-              <option key={item.id} value={item.id}>{item.name}</option>
+              <option key={item.id} value={item.id}>数据集：{item.name}</option>
             ))}
           </select>
         </div>
@@ -188,6 +209,8 @@ export function HomePage() {
           <textarea
             id="preferred-addresses"
             aria-label="优选地址"
+            rows={4}
+            placeholder="104.16.1.2#HK&#10;104.17.2.3:2053#US"
             value={preferredAddressesInput}
             onChange={(event) => setPreferredAddressesInput(event.target.value)}
           />
@@ -195,9 +218,9 @@ export function HomePage() {
         <div className="row">
           <div>
             <label htmlFor="name-prefix">备注前缀</label>
-            <input id="name-prefix" value={namePrefix} onChange={(event) => setNamePrefix(event.target.value)} />
+            <input id="name-prefix" type="text" placeholder="例如 CF" value={namePrefix} onChange={(event) => setNamePrefix(event.target.value)} />
           </div>
-          <label className="checkbox">
+          <label className="checkbox" style={{ marginBottom: 6 }}>
             <input type="checkbox" checked={keepOriginalHost} onChange={(event) => setKeepOriginalHost(event.target.checked)} />
             保留原 Host/SNI
           </label>
@@ -217,30 +240,34 @@ export function HomePage() {
         {warnings.length ? (
           <div className="warning-list">
             {warnings.map((warning) => (
-              <p key={warning} className="text-muted">
-                {warning}
-              </p>
+              <p key={warning}>{warning}</p>
             ))}
           </div>
         ) : null}
+        <div className="stats">
+          <div className="stat"><div className="num">{nodes.length}</div><div className="lbl">生成节点</div></div>
+          <div className="stat"><div className="num">{preferredCount}</div><div className="lbl">优选地址</div></div>
+          <div className="stat"><div className="num">{nodes.length}</div><div className="lbl">输出总数</div></div>
+        </div>
         <div className="node-list">
           {nodes.map((node) => (
             <article key={node.name} className="node-item">
               <div>
-                <div className="name">{node.name}</div>
-                <div className="meta">
+                <span className="name">{node.name}</span>
+                {node.type ? <span className={`tag ${getTagClass(node.type)}`}>{node.type}</span> : null}
+                <span className="meta">
                   {node.server}:{node.port}
                   {node.hostHeader ? ` · Host: ${node.hostHeader}` : ''}
                   {node.sni ? ` · SNI: ${node.sni}` : ''}
-                </div>
+                </span>
               </div>
-              <button type="button" className="btn btn-danger btn-sm" onClick={() => setNodes(nodes.filter((item) => item.name !== node.name))}>
+              <button type="button" className="del" onClick={() => setNodes(nodes.filter((item) => item.name !== node.name))}>
                 删除
               </button>
             </article>
           ))}
         </div>
-        <div className="row">
+        <div className="expire-row">
           <div>
             <label htmlFor="subscription-type">订阅类型</label>
             <select
@@ -257,7 +284,7 @@ export function HomePage() {
           </div>
           <div>
             <label htmlFor="remark">备注</label>
-            <input id="remark" aria-label="备注" value={remark} onChange={(event) => setRemark(event.target.value)} />
+            <input id="remark" type="text" aria-label="备注" placeholder="给这个订阅起个名字" value={remark} onChange={(event) => setRemark(event.target.value)} />
           </div>
         </div>
         <div className="actions-row">
@@ -268,6 +295,8 @@ export function HomePage() {
         {publicUrl ? (
           <div className="result-box">
             <input readOnly value={publicUrl} />
+            <button type="button" className="btn btn-secondary btn-sm" onClick={handleCopyUrl}>复制</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/data/subscriptions')}>订阅管理</button>
           </div>
         ) : null}
       </section>

@@ -35,18 +35,18 @@ export function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <Link to="/" className="logo">
-          <span>SN</span> sub-next
+          <span>CS</span> CloudflareSub Next
         </Link>
         <div className="auth-title">欢迎回来</div>
 
-        <form className="stack" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="account">账号</label>
-            <input id="account" type="text" value={account} onChange={(event) => setAccount(event.target.value)} />
+            <label htmlFor="account">账号（邮箱或用户名）</label>
+            <input id="account" type="text" placeholder="your@email.com" value={account} onChange={(event) => setAccount(event.target.value)} />
           </div>
           <div>
             <label htmlFor="password">密码</label>
-            <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            <input id="password" type="password" placeholder="输入密码" value={password} onChange={(event) => setPassword(event.target.value)} />
           </div>
           {error ? <p role="alert">{error}</p> : null}
           <button type="submit" className="btn btn-primary btn-lg">

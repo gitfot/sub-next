@@ -28,6 +28,18 @@ export function NodeLinkPage() {
     void refresh();
   }, []);
 
+  useEffect(() => {
+    if (!isEditing) return undefined;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsEditing(false);
+        setForm(emptyForm);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEditing]);
+
   async function handleSubmit() {
     const payload = {
       name: form.name.trim(),
@@ -62,54 +74,31 @@ export function NodeLinkPage() {
   }
 
   return (
-    <div className="panel">
-      <div className="panel-title-row">
-        <div className="panel-title">节点链接</div>
+    <div className="data-page-body">
+      <div className="panel-title" style={{ justifyContent: 'space-between' }}>
+        <span>节点链接数据集</span>
         <button type="button" className="btn btn-primary" onClick={() => { setForm(emptyForm); setIsEditing(true); }}>
-          新增节点链接
+          + 新增节点链接
         </button>
       </div>
-      {isEditing ? (
-        <div className="panel-form">
-          <label>
-            名称
-            <input aria-label="名称" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
-          </label>
-          <label>
-            描述
-            <input aria-label="描述" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
-          </label>
-          <label>
-            内容
-            <textarea aria-label="内容" value={form.content} onChange={(event) => setForm({ ...form, content: event.target.value })} />
-          </label>
-          <div className="actions-row">
-            <button type="button" className="btn btn-primary" onClick={handleSubmit}>
-              保存
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={() => { setForm(emptyForm); setIsEditing(false); }}>
-              取消
-            </button>
-          </div>
-        </div>
-      ) : null}
+
       {items.length ? (
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>名称</th>
-                <th>更新时间</th>
                 <th>内容摘要</th>
-                <th>操作</th>
+                <th>更新时间</th>
+                <th style={{ width: 140 }}>操作</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.name}</td>
-                  <td>{item.updatedAt ?? ''}</td>
-                  <td>{item.content.slice(0, 60)}</td>
+                  <td><strong>{item.name}</strong></td>
+                  <td className="td-meta text-mono">{item.content.slice(0, 60)}</td>
+                  <td className="td-meta">{item.updatedAt ? new Date(item.updatedAt).toLocaleString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace('T', ' ') : ''}</td>
                   <td className="td-actions">
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleEdit(item)}>
                       编辑
@@ -128,6 +117,35 @@ export function NodeLinkPage() {
           <p>暂无节点链接数据集。</p>
         </div>
       )}
+
+      {isEditing ? (
+        <div className="modal-overlay" role="presentation" onClick={() => { setIsEditing(false); setForm(emptyForm); }}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{form.id ? '编辑节点链接数据集' : '新增节点链接数据集'}</h3>
+              <button type="button" className="modal-close" onClick={() => { setIsEditing(false); setForm(emptyForm); }}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div>
+                <label>名称</label>
+                <input type="text" placeholder="给数据集起个名字" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+              </div>
+              <div>
+                <label>描述（可选）</label>
+                <input type="text" placeholder="简短描述用途" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
+              </div>
+              <div>
+                <label>节点内容</label>
+                <textarea rows={8} placeholder={'vmess://...\nvless://...\ntrojan://...\n一行一个'} value={form.content} onChange={(event) => setForm({ ...form, content: event.target.value })} />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-ghost" onClick={() => { setIsEditing(false); setForm(emptyForm); }}>取消</button>
+              <button type="button" className="btn btn-primary" onClick={handleSubmit}>保存</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

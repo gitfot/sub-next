@@ -22,7 +22,7 @@ export function AppShell() {
     <>
       <header>
         <NavLink to="/" className="logo">
-          <span>SN</span> sub-next
+          <span>CS</span> CloudflareSub Next
         </NavLink>
         <nav>
           <NavLink to="/">首页</NavLink>
@@ -37,9 +37,7 @@ export function AppShell() {
         </div>
       </header>
       <main>
-        <div className="main-single">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
     </>
   );
