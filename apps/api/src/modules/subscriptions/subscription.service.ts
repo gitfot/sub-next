@@ -18,6 +18,10 @@ interface PublishSubscriptionInput {
   publicBaseUrl: string;
 }
 
+function toPrismaJson(value: Prisma.InputJsonValue | ParsedNode[]) {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
 export async function createSubscription(userId: string, input: PublishSubscriptionInput) {
   const rendered = renderSubscription(input.subscriptionType, input.previewNodes, input.publicBaseUrl);
   const publicToken = crypto.randomBytes(24).toString('hex');
@@ -41,11 +45,11 @@ export async function createSubscription(userId: string, input: PublishSubscript
         preferredAddressSetId: input.preferredAddressSetId ?? null,
         nodeLinksInput: input.nodeLinksInput,
         preferredAddressesInput: input.preferredAddressesInput,
-        generatorOptions: {
+        generatorOptions: toPrismaJson({
           namePrefix: input.namePrefix,
           keepOriginalHost: input.keepOriginalHost,
-        },
-        previewNodesJson: input.previewNodes,
+        }),
+        previewNodesJson: toPrismaJson(input.previewNodes),
         renderedContent: rendered.body,
         renderedContentEncoding: input.subscriptionType === 'clash' || input.subscriptionType === 'surge' ? 'plain' : 'base64',
       },
