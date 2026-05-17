@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiJson } from '../../app/api-client.js';
@@ -22,7 +23,7 @@ describe('app shell', () => {
     expect(screen.getByLabelText('账号')).toBeInTheDocument();
   });
 
-  it('renders top navigation and current account for authenticated pages', async () => {
+  it('renders a compact account menu for authenticated pages', async () => {
     saveSession({
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
@@ -38,9 +39,18 @@ describe('app shell', () => {
 
     render(<RouterProvider router={router} />);
 
+    const user = userEvent.setup();
+
     expect(screen.getByRole('link', { name: '首页' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '数据管理' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '打开账户菜单' })).toBeInTheDocument();
+    expect(screen.queryByText('admin')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '退出登录' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '打开账户菜单' }));
+
     expect(await screen.findByText('admin')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '退出登录' })).toBeInTheDocument();
   });
 
   it('redirects /data to the first data tab and marks it active', async () => {
