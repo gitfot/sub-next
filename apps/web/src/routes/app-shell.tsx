@@ -47,7 +47,7 @@ export function AppShell() {
     <>
       <header>
         <NavLink to="/" className="logo">
-          <span>CS</span> CloudflareSub Next
+          <span>CS</span>Sub Next
         </NavLink>
         <nav>
           <NavLink to="/">首页</NavLink>

@@ -34,7 +34,7 @@ export function RegisterPage() {
     <div className="auth-page">
       <div className="auth-card">
         <Link to="/" className="logo">
-          <span>CS</span> CloudflareSub Next
+          <span>CS</span>Sub Next
         </Link>
         <div className="auth-title">创建账号</div>
 
