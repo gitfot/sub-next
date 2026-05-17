@@ -7,6 +7,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1).default('postgresql://postgres:postgres@localhost:5432/sub_next'),
   JWT_ACCESS_SECRET: z.string().min(32).default(TEST_ACCESS_SECRET),
   JWT_REFRESH_SECRET: z.string().min(32).default(TEST_REFRESH_SECRET),
+  ADMIN_PASSWORD: z.string().min(8).default('admin123'),
   PUBLIC_BASE_URL: z.string().url().default('http://localhost:3000'),
   API_BASE_URL: z.string().url().default('http://localhost:4000'),
   WEB_ORIGIN: z.string().url().default('http://localhost:3000'),

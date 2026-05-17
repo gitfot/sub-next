@@ -19,7 +19,10 @@ export function RegisterPage() {
     }
 
     const payload = await response.json();
-    saveSession(payload.tokens);
+    saveSession({
+      ...payload.tokens,
+      user: payload.user,
+    });
     navigate('/');
   }
 
@@ -38,7 +41,7 @@ export function RegisterPage() {
           </div>
           <div>
             <label htmlFor="username">用户名</label>
-            <input id="username" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} />
+            <input id="username" type="text" value={form.username} onChange={(event) => setForm({ ...form, username: event.target.value })} />
           </div>
           <div>
             <label htmlFor="register-password">密码</label>

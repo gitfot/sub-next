@@ -23,7 +23,10 @@ export function LoginPage() {
     }
 
     const payload = await response.json();
-    saveSession(payload.tokens);
+    saveSession({
+      ...payload.tokens,
+      user: payload.user,
+    });
     navigate('/');
   }
 
@@ -38,7 +41,7 @@ export function LoginPage() {
         <form className="stack" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="account">账号</label>
-            <input id="account" value={account} onChange={(event) => setAccount(event.target.value)} />
+            <input id="account" type="text" value={account} onChange={(event) => setAccount(event.target.value)} />
           </div>
           <div>
             <label htmlFor="password">密码</label>

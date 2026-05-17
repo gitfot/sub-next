@@ -1,4 +1,5 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { getSession } from './auth-store.js';
 import { AppShell } from '../routes/app-shell.js';
 import { DataPage } from '../routes/data-page.js';
 import { HomePage } from '../routes/home-page.js';
@@ -8,12 +9,28 @@ import { PreferredAddressPage } from '../routes/preferred-address-page.js';
 import { RegisterPage } from '../routes/register-page.js';
 import { SubscriptionManagementPage } from '../routes/subscription-management-page.js';
 
+function RequireAuth() {
+  if (!getSession()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <AppShell />;
+}
+
+function RedirectAuthenticated({ children }: { children: React.ReactNode }) {
+  if (getSession()) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 export const routes = [
-  { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <RegisterPage /> },
+  { path: '/login', element: <RedirectAuthenticated><LoginPage /></RedirectAuthenticated> },
+  { path: '/register', element: <RedirectAuthenticated><RegisterPage /></RedirectAuthenticated> },
   {
     path: '/',
-    element: <AppShell />,
+    element: <RequireAuth />,
     children: [
       { index: true, element: <HomePage /> },
       {
