@@ -1,9 +1,14 @@
 import { getSession, notifyAuthExpired } from './auth-store.js';
 
-function buildHeaders(init?: HeadersInit) {
+function hasRequestBody(body: RequestInit['body']) {
+  return body !== undefined && body !== null;
+}
+
+function buildHeaders(init?: HeadersInit, body?: RequestInit['body']) {
   const session = getSession();
   const headers = new Headers(init);
-  if (!headers.has('content-type')) {
+
+  if (!headers.has('content-type') && hasRequestBody(body)) {
     headers.set('content-type', 'application/json');
   }
   if (session?.accessToken) {
@@ -15,7 +20,7 @@ function buildHeaders(init?: HeadersInit) {
 export async function apiFetch(input: string, init: RequestInit = {}) {
   const response = await fetch(input, {
     ...init,
-    headers: buildHeaders(init.headers),
+    headers: buildHeaders(init.headers, init.body),
   });
 
   if (response.status === 401) {

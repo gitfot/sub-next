@@ -262,9 +262,17 @@ textarea {
   color: var(--accent);
 }
 
+.btn-secondary:hover {
+  background: #dbeafe;
+}
+
 .btn-danger {
   background: var(--danger-light);
   color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: #fee2e2;
 }
 
 .btn-lg {
@@ -412,4 +420,205 @@ tbody td {
 
 .text-small {
   font-size: 11px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+}
+
+.modal {
+  width: min(860px, 100%);
+  max-height: min(90vh, 860px);
+  overflow: auto;
+  background:
+    linear-gradient(180deg, rgba(239, 246, 255, 0.9) 0%, rgba(255, 255, 255, 0.96) 30%, #fff 100%);
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
+}
+
+.subscription-detail-modal {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.modal-eyebrow {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.subscription-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.09), rgba(59, 130, 246, 0.02));
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}
+
+.subscription-detail-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subscription-detail-subtitle {
+  color: var(--text-2);
+  text-transform: capitalize;
+}
+
+.subscription-detail-url {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.subscription-detail-url code {
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #1e3a8a;
+  font-size: 12px;
+}
+
+.subscription-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.detail-card strong {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.detail-label {
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-section-header h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.detail-section-header span {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.detail-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.detail-code-block {
+  margin: 0;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 960px) {
+  .subscription-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  .subscription-detail-modal {
+    padding: 18px;
+  }
+
+  .modal-header,
+  .subscription-detail-hero,
+  .detail-section-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .subscription-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }

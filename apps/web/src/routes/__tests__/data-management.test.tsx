@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -228,7 +228,16 @@ describe('subscription management', () => {
     expect(await screen.findByText('测试订阅')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '详情' }));
-    expect(await screen.findByText('vmess://demo')).toBeInTheDocument();
+    const dialog = await screen.findByRole('dialog', { name: '订阅详情' });
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByText('测试订阅')).toBeInTheDocument();
+    expect(within(dialog).getByText('vmess://demo')).toBeInTheDocument();
+    expect(within(dialog).getByText('104.16.1.2#HK')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '关闭' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: '订阅详情' })).not.toBeInTheDocument();
+    });
 
     await user.click(screen.getByRole('button', { name: '复制' }));
     expect(clipboardWriteText).toHaveBeenCalledWith('http://localhost:4000/subscriptions/public/demo-token');
