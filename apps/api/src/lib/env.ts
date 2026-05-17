@@ -1,4 +1,7 @@
+import { config } from 'dotenv';
 import { z } from 'zod';
+
+config({ path: new URL('../../../../.env', import.meta.url), quiet: true });
 
 const TEST_ACCESS_SECRET = 'test-access-secret-12345678901234567890';
 const TEST_REFRESH_SECRET = 'test-refresh-secret-1234567890123456789';

@@ -6,7 +6,7 @@ export type SubscriptionTarget = (typeof subscriptionTargets)[number];
 
 export const publishSubscriptionSchema = previewRequestSchema.extend({
   previewNodes: z.array(z.record(z.string(), z.unknown())).min(1),
-  remark: z.string().min(1).max(100),
+  remark: z.string().trim().max(100).optional().transform((value) => value ?? ''),
   expiresAt: z.string().datetime(),
   subscriptionType: z.enum(subscriptionTargets),
 });

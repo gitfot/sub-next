@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { db } from '../../lib/db.js';
 import { getEnv } from '../../lib/env.js';
 import {
@@ -65,8 +66,36 @@ async function loginBuiltinAdmin(input: { account: string; password: string }) {
     throw new Error('Invalid credentials');
   }
 
+  await ensureBuiltinAdminUser();
   const tokens = await issueSession(BUILTIN_ADMIN_USER.id, { persistSession: false });
   return { user: BUILTIN_ADMIN_USER, tokens };
+}
+
+async function ensureBuiltinAdminUser() {
+  const existingUser = await db.user.findFirst({
+    where: {
+      OR: [{ email: BUILTIN_ADMIN_USER.email }, { username: BUILTIN_ADMIN_USER.username }],
+    },
+    select: { id: true },
+  });
+
+  if (existingUser?.id === BUILTIN_ADMIN_USER.id) {
+    return;
+  }
+
+  if (existingUser) {
+    throw new Error('Built-in admin account conflicts with an existing user');
+  }
+
+  await db.user.create({
+    data: {
+      id: BUILTIN_ADMIN_USER.id,
+      email: BUILTIN_ADMIN_USER.email,
+      username: BUILTIN_ADMIN_USER.username,
+      passwordHash: await hashPassword(crypto.randomUUID()),
+    },
+    select: { id: true },
+  });
 }
 
 async function issueSession(userId: string, options?: { persistSession?: boolean }) {

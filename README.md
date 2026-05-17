@@ -29,6 +29,9 @@ pnpm dev:api
 pnpm dev:web
 ```
 
+When the API starts outside the test runtime, it checks whether the required Prisma tables exist.
+If any are missing, it automatically runs `prisma db push` before listening on the port.
+
 ## Verification checklist
 
 - register a user

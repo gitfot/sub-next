@@ -16,4 +16,28 @@ describe('subscription schema', () => {
     expect(payload.subscriptionType).toBe('clash');
     expect(subscriptionTargets).toContain('surge');
   });
+
+  it('accepts an empty or missing remark', () => {
+    const withEmptyRemark = publishSubscriptionSchema.parse({
+      nodeLinksInput: 'vmess://demo',
+      preferredAddressesInput: '104.16.1.2#HK',
+      keepOriginalHost: true,
+      previewNodes: [{ name: 'demo' }],
+      remark: '',
+      expiresAt: '2026-06-15T00:00:00.000Z',
+      subscriptionType: 'clash',
+    });
+
+    const withoutRemark = publishSubscriptionSchema.parse({
+      nodeLinksInput: 'vmess://demo',
+      preferredAddressesInput: '104.16.1.2#HK',
+      keepOriginalHost: true,
+      previewNodes: [{ name: 'demo' }],
+      expiresAt: '2026-06-15T00:00:00.000Z',
+      subscriptionType: 'clash',
+    });
+
+    expect(withEmptyRemark.remark).toBe('');
+    expect(withoutRemark.remark).toBe('');
+  });
 });

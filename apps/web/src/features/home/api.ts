@@ -9,7 +9,7 @@ export interface PreviewRequest {
 
 export interface PublishSubscriptionRequest extends PreviewRequest {
   previewNodes: Array<Record<string, unknown>>;
-  remark: string;
+  remark?: string;
   expiresAt: string;
   subscriptionType: 'clash' | 'v2rayn' | 'shadowrocket' | 'surge';
 }

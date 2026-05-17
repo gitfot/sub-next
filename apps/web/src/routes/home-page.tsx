@@ -45,14 +45,15 @@ export function HomePage() {
   }
 
   async function handlePublish() {
+    const normalizedRemark = remark.trim();
     const payload = await publishSubscription({
       nodeLinksInput,
       preferredAddressesInput,
       keepOriginalHost,
       previewNodes: nodes as unknown as Array<Record<string, unknown>>,
-      remark,
       expiresAt,
       subscriptionType,
+      ...(normalizedRemark ? { remark: normalizedRemark } : {}),
       ...(namePrefix ? { namePrefix } : {}),
     });
     setPublicUrl(payload.publicUrl ?? '');
