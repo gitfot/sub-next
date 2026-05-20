@@ -248,6 +248,27 @@ select:focus { border-color: var(--accent); }
   cursor: pointer;
 }
 .checkbox input { accent-color: var(--accent); }
+.source-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fcfcfc;
+}
+.source-item {
+  margin-bottom: 0;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.source-item:has(input:checked) {
+  border-color: #bfdbfe;
+  background: var(--accent-light);
+  color: var(--accent);
+}
 
 /* ========== Buttons ========== */
 .btn {

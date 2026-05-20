@@ -5,6 +5,8 @@ import { db } from '../../lib/db.js';
 import type { SubscriptionTarget } from './subscription.schema.js';
 
 interface PublishSubscriptionInput {
+  nodeLinkSetIds?: string[] | undefined;
+  preferredAddressSetIds?: string[] | undefined;
   nodeLinkSetId?: string | undefined;
   preferredAddressSetId?: string | undefined;
   nodeLinksInput: string;
@@ -34,6 +36,16 @@ function getSubscriptionStatus(subscription: { expiresAt: Date; deletedAt: Date 
 
 function buildPublicUrl(publicBaseUrl: string, publicToken: string) {
   return `${publicBaseUrl}/subscriptions/public/${publicToken}`;
+}
+
+function normalizeSnapshotIds(options: { ids?: unknown; legacyId?: string | null }) {
+  if (Array.isArray(options.ids)) {
+    return options.ids.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  }
+  if (options.legacyId) {
+    return [options.legacyId];
+  }
+  return [];
 }
 
 function mapSubscriptionListItem(
@@ -77,6 +89,8 @@ export async function createSubscription(userId: string, input: PublishSubscript
         generatorOptions: toPrismaJson({
           namePrefix: input.namePrefix,
           keepOriginalHost: input.keepOriginalHost,
+          nodeLinkSetIds: input.nodeLinkSetIds ?? [],
+          preferredAddressSetIds: input.preferredAddressSetIds ?? [],
         }),
         previewNodesJson: toPrismaJson(input.previewNodes),
         renderedContent: rendered.body,
@@ -110,7 +124,7 @@ export async function listSubscriptions(userId: string, publicBaseUrl: string) {
     where: { userId, deletedAt: null },
     orderBy: { updatedAt: 'desc' },
   });
-  return items.map((item) => mapSubscriptionListItem(publicBaseUrl, item));
+  return items.map((item: Awaited<ReturnType<typeof db.subscription.create>>) => mapSubscriptionListItem(publicBaseUrl, item));
 }
 
 export async function getSubscriptionDetail(userId: string, id: string, publicBaseUrl: string) {
@@ -119,17 +133,30 @@ export async function getSubscriptionDetail(userId: string, id: string, publicBa
     return null;
   }
   const snapshot = await findLatestSnapshot(subscription.id);
-  const options = snapshot.generatorOptions as { namePrefix?: string; keepOriginalHost?: boolean };
+  const options = snapshot.generatorOptions as {
+    namePrefix?: string;
+    keepOriginalHost?: boolean;
+    nodeLinkSetIds?: unknown;
+    preferredAddressSetIds?: unknown;
+  };
+  const nodeLinkSetIds = normalizeSnapshotIds({
+    ids: options.nodeLinkSetIds,
+    legacyId: snapshot.nodeLinkSetId,
+  });
+  const preferredAddressSetIds = normalizeSnapshotIds({
+    ids: options.preferredAddressSetIds,
+    legacyId: snapshot.preferredAddressSetId,
+  });
   return {
     subscription: mapSubscriptionListItem(publicBaseUrl, subscription),
     snapshot: {
+      nodeLinkSetIds,
+      preferredAddressSetIds,
       nodeLinksInput: snapshot.nodeLinksInput,
       preferredAddressesInput: snapshot.preferredAddressesInput,
       namePrefix: options.namePrefix ?? '',
       keepOriginalHost: options.keepOriginalHost ?? true,
       previewNodes: snapshot.previewNodesJson,
-      ...(snapshot.nodeLinkSetId ? { nodeLinkSetId: snapshot.nodeLinkSetId } : {}),
-      ...(snapshot.preferredAddressSetId ? { preferredAddressSetId: snapshot.preferredAddressSetId } : {}),
     },
   };
 }
@@ -141,14 +168,14 @@ export async function restoreSubscriptionInput(userId: string, id: string) {
   }
 
   return {
+    nodeLinkSetIds: detail.snapshot.nodeLinkSetIds ?? [],
+    preferredAddressSetIds: detail.snapshot.preferredAddressSetIds ?? [],
     nodeLinksInput: detail.snapshot.nodeLinksInput,
     preferredAddressesInput: detail.snapshot.preferredAddressesInput,
     namePrefix: detail.snapshot.namePrefix,
     keepOriginalHost: detail.snapshot.keepOriginalHost,
     requiresRegenerate: true,
     restoredFromSubscriptionId: id,
-    ...(detail.snapshot.nodeLinkSetId ? { nodeLinkSetId: detail.snapshot.nodeLinkSetId } : {}),
-    ...(detail.snapshot.preferredAddressSetId ? { preferredAddressSetId: detail.snapshot.preferredAddressSetId } : {}),
   };
 }
 

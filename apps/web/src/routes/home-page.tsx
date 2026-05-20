@@ -12,14 +12,68 @@ import { previewNodes, publishSubscription } from '../features/home/api.js';
 type PreviewNode = HomeDraftPreviewNode;
 
 interface RestoreState {
-  nodeLinkSetId?: string;
-  preferredAddressSetId?: string;
+  nodeLinkSetIds?: string[];
+  preferredAddressSetIds?: string[];
   nodeLinksInput?: string;
   preferredAddressesInput?: string;
   namePrefix?: string;
   keepOriginalHost?: boolean;
   previewNodes?: PreviewNode[];
   requiresRegenerate?: boolean;
+}
+
+function normalizeSelectedIds(ids?: string[]) {
+  return Array.isArray(ids) ? ids.filter((item) => item.trim()) : [];
+}
+
+function splitLines(value: string) {
+  return value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function joinUniqueSections(sections: string[]) {
+  const lines: string[] = [];
+  const seen = new Set<string>();
+
+  for (const section of sections) {
+    for (const line of splitLines(section)) {
+      if (seen.has(line)) continue;
+      seen.add(line);
+      lines.push(line);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+function getDatasetContentMap(datasets: DatasetItem[]) {
+  return new Map(datasets.map((item) => [item.id, item.content]));
+}
+
+function getSelectedDatasetContent(ids: string[], datasets: DatasetItem[]) {
+  const contentMap = getDatasetContentMap(datasets);
+  return ids
+    .map((id) => contentMap.get(id) ?? '')
+    .filter((content) => content.trim())
+    .join('\n');
+}
+
+function removeDatasetLines(input: string, selectedIds: string[], datasets: DatasetItem[]) {
+  const selectedSet = new Set(selectedIds);
+  const allDatasetLines = new Set(
+    datasets.flatMap((item) => splitLines(item.content)),
+  );
+  const selectedDatasetLines = new Set(
+    datasets
+      .filter((item) => selectedSet.has(item.id))
+      .flatMap((item) => splitLines(item.content)),
+  );
+
+  return splitLines(input)
+    .filter((line) => !allDatasetLines.has(line) || selectedDatasetLines.has(line))
+    .join('\n');
 }
 
 function getTagClass(type: string) {
@@ -37,8 +91,8 @@ export function HomePage() {
   const baseDraft = loadHomeDraft();
   const initialDraft: HomeDraft = {
     ...baseDraft,
-    ...(restoreState?.nodeLinkSetId ? { nodeLinkSetId: restoreState.nodeLinkSetId } : {}),
-    ...(restoreState?.preferredAddressSetId ? { preferredAddressSetId: restoreState.preferredAddressSetId } : {}),
+    ...(restoreState?.nodeLinkSetIds ? { nodeLinkSetIds: normalizeSelectedIds(restoreState.nodeLinkSetIds) } : {}),
+    ...(restoreState?.preferredAddressSetIds ? { preferredAddressSetIds: normalizeSelectedIds(restoreState.preferredAddressSetIds) } : {}),
     ...(restoreState?.nodeLinksInput !== undefined ? { nodeLinksInput: restoreState.nodeLinksInput } : {}),
     ...(restoreState?.preferredAddressesInput !== undefined ? { preferredAddressesInput: restoreState.preferredAddressesInput } : {}),
     ...(restoreState?.namePrefix !== undefined ? { namePrefix: restoreState.namePrefix } : {}),
@@ -48,8 +102,8 @@ export function HomePage() {
   };
   const [nodeDatasets, setNodeDatasets] = useState<DatasetItem[]>([]);
   const [preferredDatasets, setPreferredDatasets] = useState<DatasetItem[]>([]);
-  const [nodeLinkSetId, setNodeLinkSetId] = useState(initialDraft.nodeLinkSetId ?? '');
-  const [preferredAddressSetId, setPreferredAddressSetId] = useState(initialDraft.preferredAddressSetId ?? '');
+  const [nodeLinkSetIds, setNodeLinkSetIds] = useState<string[]>(initialDraft.nodeLinkSetIds ?? []);
+  const [preferredAddressSetIds, setPreferredAddressSetIds] = useState<string[]>(initialDraft.preferredAddressSetIds ?? []);
   const [nodeLinksInput, setNodeLinksInput] = useState(initialDraft.nodeLinksInput);
   const [preferredAddressesInput, setPreferredAddressesInput] = useState(initialDraft.preferredAddressesInput);
   const [namePrefix, setNamePrefix] = useState(initialDraft.namePrefix);
@@ -82,8 +136,8 @@ export function HomePage() {
 
   useEffect(() => {
     saveHomeDraft({
-      ...(nodeLinkSetId ? { nodeLinkSetId } : {}),
-      ...(preferredAddressSetId ? { preferredAddressSetId } : {}),
+      nodeLinkSetIds,
+      preferredAddressSetIds,
       nodeLinksInput,
       preferredAddressesInput,
       namePrefix,
@@ -95,8 +149,8 @@ export function HomePage() {
       requiresRegenerate,
     });
   }, [
-    nodeLinkSetId,
-    preferredAddressSetId,
+    nodeLinkSetIds,
+    preferredAddressSetIds,
     nodeLinksInput,
     preferredAddressesInput,
     namePrefix,
@@ -110,8 +164,8 @@ export function HomePage() {
 
   async function handlePreview() {
     const payload = await previewNodes({
-      ...(nodeLinkSetId ? { nodeLinkSetId } : {}),
-      ...(preferredAddressSetId ? { preferredAddressSetId } : {}),
+      ...(nodeLinkSetIds.length ? { nodeLinkSetIds } : {}),
+      ...(preferredAddressSetIds.length ? { preferredAddressSetIds } : {}),
       nodeLinksInput,
       preferredAddressesInput,
       keepOriginalHost,
@@ -125,8 +179,8 @@ export function HomePage() {
   async function handlePublish() {
     const normalizedRemark = remark.trim();
     const payload = await publishSubscription({
-      ...(nodeLinkSetId ? { nodeLinkSetId } : {}),
-      ...(preferredAddressSetId ? { preferredAddressSetId } : {}),
+      ...(nodeLinkSetIds.length ? { nodeLinkSetIds } : {}),
+      ...(preferredAddressSetIds.length ? { preferredAddressSetIds } : {}),
       nodeLinksInput,
       preferredAddressesInput,
       keepOriginalHost,
@@ -139,26 +193,34 @@ export function HomePage() {
     setPublicUrl(payload.publicUrl ?? '');
   }
 
-  function applyNodeDataset(id: string) {
-    setNodeLinkSetId(id);
-    const found = nodeDatasets.find((item) => item.id === id);
-    if (found) {
-      setNodeLinksInput(found.content);
-      setNodes([]);
-      setWarnings([]);
-      setPublicUrl('');
-    }
+  function toggleNodeDataset(id: string, checked: boolean) {
+    const nextIds = checked
+      ? [...nodeLinkSetIds, id]
+      : nodeLinkSetIds.filter((item) => item !== id);
+
+    const manualInput = removeDatasetLines(nodeLinksInput, nodeLinkSetIds, nodeDatasets);
+    const selectedContent = getSelectedDatasetContent(nextIds, nodeDatasets);
+
+    setNodeLinkSetIds(nextIds);
+    setNodeLinksInput(joinUniqueSections([manualInput, selectedContent]));
+    setNodes([]);
+    setWarnings([]);
+    setPublicUrl('');
   }
 
-  function applyPreferredDataset(id: string) {
-    setPreferredAddressSetId(id);
-    const found = preferredDatasets.find((item) => item.id === id);
-    if (found) {
-      setPreferredAddressesInput(found.content);
-      setNodes([]);
-      setWarnings([]);
-      setPublicUrl('');
-    }
+  function togglePreferredDataset(id: string, checked: boolean) {
+    const nextIds = checked
+      ? [...preferredAddressSetIds, id]
+      : preferredAddressSetIds.filter((item) => item !== id);
+
+    const manualInput = removeDatasetLines(preferredAddressesInput, preferredAddressSetIds, preferredDatasets);
+    const selectedContent = getSelectedDatasetContent(nextIds, preferredDatasets);
+
+    setPreferredAddressSetIds(nextIds);
+    setPreferredAddressesInput(joinUniqueSections([manualInput, selectedContent]));
+    setNodes([]);
+    setWarnings([]);
+    setPublicUrl('');
   }
 
   async function handleCopyUrl() {
@@ -171,13 +233,21 @@ export function HomePage() {
       <section className="panel">
         <div className="panel-title">输入配置</div>
         <div>
-          <label htmlFor="node-link-set">节点链接来源</label>
-          <select id="node-link-set" aria-label="节点链接来源" value={nodeLinkSetId} onChange={(event) => applyNodeDataset(event.target.value)}>
-            <option value="">直接粘贴</option>
-            {nodeDatasets.map((item) => (
-              <option key={item.id} value={item.id}>数据集：{item.name}</option>
-            ))}
-          </select>
+          <label>节点链接来源</label>
+          <div className="source-list" aria-label="节点链接来源">
+            {nodeDatasets.length ? nodeDatasets.map((item) => (
+              <label key={item.id} className="checkbox source-item">
+                <input
+                  type="checkbox"
+                  checked={nodeLinkSetIds.includes(item.id)}
+                  onChange={(event) => toggleNodeDataset(item.id, event.target.checked)}
+                />
+                {item.name}
+              </label>
+            )) : (
+              <p className="text-muted">暂无可选数据集，直接在下方粘贴即可。</p>
+            )}
+          </div>
         </div>
         <div>
           <label htmlFor="node-links">节点链接</label>
@@ -191,18 +261,21 @@ export function HomePage() {
           />
         </div>
         <div>
-          <label htmlFor="preferred-address-set">优选地址来源</label>
-          <select
-            id="preferred-address-set"
-            aria-label="优选地址来源"
-            value={preferredAddressSetId}
-            onChange={(event) => applyPreferredDataset(event.target.value)}
-          >
-            <option value="">直接粘贴</option>
-            {preferredDatasets.map((item) => (
-              <option key={item.id} value={item.id}>数据集：{item.name}</option>
-            ))}
-          </select>
+          <label>优选地址来源</label>
+          <div className="source-list" aria-label="优选地址来源">
+            {preferredDatasets.length ? preferredDatasets.map((item) => (
+              <label key={item.id} className="checkbox source-item">
+                <input
+                  type="checkbox"
+                  checked={preferredAddressSetIds.includes(item.id)}
+                  onChange={(event) => togglePreferredDataset(item.id, event.target.checked)}
+                />
+                {item.name}
+              </label>
+            )) : (
+              <p className="text-muted">暂无可选数据集，直接在下方粘贴即可。</p>
+            )}
+          </div>
         </div>
         <div>
           <label htmlFor="preferred-addresses">优选地址</label>

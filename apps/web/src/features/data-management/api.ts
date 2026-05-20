@@ -52,8 +52,8 @@ export interface SubscriptionListItem {
 export interface SubscriptionDetail {
   subscription: SubscriptionListItem;
   snapshot: {
-    nodeLinkSetId?: string;
-    preferredAddressSetId?: string;
+    nodeLinkSetIds?: string[];
+    preferredAddressSetIds?: string[];
     nodeLinksInput: string;
     preferredAddressesInput: string;
     namePrefix: string;
@@ -63,8 +63,8 @@ export interface SubscriptionDetail {
 }
 
 export interface RestorePayload {
-  nodeLinkSetId?: string;
-  preferredAddressSetId?: string;
+  nodeLinkSetIds?: string[];
+  preferredAddressSetIds?: string[];
   nodeLinksInput: string;
   preferredAddressesInput: string;
   namePrefix: string;

@@ -8,8 +8,8 @@ export interface HomeDraftPreviewNode {
 }
 
 export interface HomeDraft {
-  nodeLinkSetId?: string;
-  preferredAddressSetId?: string;
+  nodeLinkSetIds: string[];
+  preferredAddressSetIds: string[];
   nodeLinksInput: string;
   preferredAddressesInput: string;
   namePrefix: string;
@@ -22,8 +22,8 @@ export interface HomeDraft {
 }
 
 export interface RestoreDraftInput {
-  nodeLinkSetId?: string;
-  preferredAddressSetId?: string;
+  nodeLinkSetIds?: string[];
+  preferredAddressSetIds?: string[];
   nodeLinksInput: string;
   preferredAddressesInput: string;
   namePrefix: string;
@@ -32,10 +32,29 @@ export interface RestoreDraftInput {
   requiresRegenerate: boolean;
 }
 
+interface LegacyDraftShape {
+  nodeLinkSetId?: string;
+  preferredAddressSetId?: string;
+  nodeLinkSetIds?: string[];
+  preferredAddressSetIds?: string[];
+}
+
+function normalizeSelectedIds(value?: string[] | string) {
+  if (Array.isArray(value)) {
+    return value.filter((item) => item.trim());
+  }
+  if (typeof value === 'string' && value.trim()) {
+    return [value];
+  }
+  return [];
+}
+
 const STORAGE_KEY = 'sub-next-home-draft';
 
 export function getEmptyHomeDraft(): HomeDraft {
   return {
+    nodeLinkSetIds: [],
+    preferredAddressSetIds: [],
     nodeLinksInput: '',
     preferredAddressesInput: '',
     namePrefix: '',
@@ -54,9 +73,12 @@ export function loadHomeDraft(): HomeDraft {
     return getEmptyHomeDraft();
   }
   try {
+    const parsed = JSON.parse(raw) as Partial<HomeDraft> & LegacyDraftShape;
     return {
       ...getEmptyHomeDraft(),
-      ...(JSON.parse(raw) as Partial<HomeDraft>),
+      ...parsed,
+      nodeLinkSetIds: normalizeSelectedIds(parsed.nodeLinkSetIds ?? parsed.nodeLinkSetId),
+      preferredAddressSetIds: normalizeSelectedIds(parsed.preferredAddressSetIds ?? parsed.preferredAddressSetId),
     };
   } catch {
     return getEmptyHomeDraft();
@@ -70,8 +92,8 @@ export function saveHomeDraft(draft: HomeDraft) {
 export function saveHomeDraftFromRestore(restore: RestoreDraftInput) {
   saveHomeDraft({
     ...getEmptyHomeDraft(),
-    ...(restore.nodeLinkSetId ? { nodeLinkSetId: restore.nodeLinkSetId } : {}),
-    ...(restore.preferredAddressSetId ? { preferredAddressSetId: restore.preferredAddressSetId } : {}),
+    nodeLinkSetIds: normalizeSelectedIds(restore.nodeLinkSetIds),
+    preferredAddressSetIds: normalizeSelectedIds(restore.preferredAddressSetIds),
     nodeLinksInput: restore.nodeLinksInput,
     preferredAddressesInput: restore.preferredAddressesInput,
     namePrefix: restore.namePrefix,

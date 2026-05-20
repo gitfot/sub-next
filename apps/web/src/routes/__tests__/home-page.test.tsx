@@ -91,10 +91,16 @@ describe('home page', () => {
     const user = userEvent.setup();
     vi.spyOn(global, 'fetch')
       .mockResolvedValueOnce(new Response(JSON.stringify({
-        items: [{ id: 'node-1', name: '机场A', content: 'vmess://saved-node' }],
+        items: [
+          { id: 'node-1', name: '机场A', content: 'vmess://saved-node' },
+          { id: 'node-2', name: '机场B', content: 'trojan://saved-node-2' },
+        ],
       })))
       .mockResolvedValueOnce(new Response(JSON.stringify({
-        items: [{ id: 'pref-1', name: 'Cloudflare', content: '104.16.1.2#HK' }],
+        items: [
+          { id: 'pref-1', name: 'Cloudflare', content: '104.16.1.2#HK' },
+          { id: 'pref-2', name: 'Anycast', content: '104.17.2.3:2053#US' },
+        ],
       })));
 
     render(
@@ -103,11 +109,21 @@ describe('home page', () => {
       </MemoryRouter>,
     );
 
-    await user.selectOptions(await screen.findByLabelText('节点链接来源'), 'node-1');
-    await user.selectOptions(screen.getByLabelText('优选地址来源'), 'pref-1');
+    await user.type(await screen.findByLabelText('节点链接'), 'vmess://manual');
+    await user.type(screen.getByLabelText('优选地址'), '198.51.100.1#Manual');
+    await user.click(await screen.findByRole('checkbox', { name: '机场A' }));
+    await user.click(screen.getByRole('checkbox', { name: '机场B' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Cloudflare' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Anycast' }));
 
-    expect(screen.getByLabelText('节点链接')).toHaveValue('vmess://saved-node');
-    expect(screen.getByLabelText('优选地址')).toHaveValue('104.16.1.2#HK');
+    expect(screen.getByLabelText('节点链接')).toHaveValue('vmess://manual\nvmess://saved-node\ntrojan://saved-node-2');
+    expect(screen.getByLabelText('优选地址')).toHaveValue('198.51.100.1#Manual\n104.16.1.2#HK\n104.17.2.3:2053#US');
+
+    await user.click(screen.getByRole('checkbox', { name: '机场A' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Cloudflare' }));
+
+    expect(screen.getByLabelText('节点链接')).toHaveValue('vmess://manual\ntrojan://saved-node-2');
+    expect(screen.getByLabelText('优选地址')).toHaveValue('198.51.100.1#Manual\n104.17.2.3:2053#US');
   });
 
   it('restores draft input after leaving and returning to the homepage', async () => {
@@ -146,7 +162,9 @@ describe('home page', () => {
 
   it('requires regenerate after restoring from subscription history', async () => {
     saveHomeDraftFromRestore({
-      nodeLinksInput: 'vmess://restored',
+      nodeLinkSetIds: ['node-1', 'node-2'],
+      preferredAddressSetIds: ['pref-1'],
+      nodeLinksInput: 'vmess://restored\nvmess://saved-node\ntrojan://saved-node-2',
       preferredAddressesInput: '104.16.1.2#HK',
       namePrefix: 'CF',
       keepOriginalHost: true,
@@ -154,8 +172,15 @@ describe('home page', () => {
     });
 
     vi.spyOn(global, 'fetch')
-      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })));
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        items: [
+          { id: 'node-1', name: '机场A', content: 'vmess://saved-node' },
+          { id: 'node-2', name: '机场B', content: 'trojan://saved-node-2' },
+        ],
+      })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        items: [{ id: 'pref-1', name: 'Cloudflare', content: '104.16.1.2#HK' }],
+      })));
 
     render(
       <MemoryRouter>
@@ -163,8 +188,11 @@ describe('home page', () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByDisplayValue('vmess://restored')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('vmess://restored\nvmess://saved-node\ntrojan://saved-node-2')).toBeInTheDocument();
     expect(screen.getByText('已从历史订阅恢复输入，请重新生成节点后再发布。')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '生成订阅' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: '机场A' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: '机场B' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Cloudflare' })).toBeChecked();
   });
 });

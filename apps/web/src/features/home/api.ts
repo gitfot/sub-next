@@ -1,8 +1,8 @@
 import { apiJson } from '../../app/api-client.js';
 
 export interface PreviewRequest {
-  nodeLinkSetId?: string;
-  preferredAddressSetId?: string;
+  nodeLinkSetIds?: string[];
+  preferredAddressSetIds?: string[];
   nodeLinksInput: string;
   preferredAddressesInput: string;
   namePrefix?: string;

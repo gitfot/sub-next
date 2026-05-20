@@ -19,6 +19,8 @@ describe('preview and subscriptions', () => {
     const app = buildApp();
     await app.ready();
     const { accessToken } = await createUserAndLogin(app.server);
+    const nodeLinkSetIds = [crypto.randomUUID(), crypto.randomUUID()];
+    const preferredAddressSetIds = [crypto.randomUUID(), crypto.randomUUID()];
 
     const previewResponse = await request(app.server)
       .post('/generator/preview')
@@ -34,6 +36,8 @@ describe('preview and subscriptions', () => {
       .post('/subscriptions')
       .set('authorization', `Bearer ${accessToken}`)
       .send({
+        nodeLinkSetIds,
+        preferredAddressSetIds,
         nodeLinksInput: SAMPLE_VMESS,
         preferredAddressesInput: '104.16.1.2#HK',
         namePrefix: 'CF',
@@ -65,12 +69,16 @@ describe('preview and subscriptions', () => {
     expect(detailResponse.body.subscription.publicUrl).toContain('/subscriptions/public/');
     expect(detailResponse.body.snapshot.nodeLinksInput).toContain('vmess://');
     expect(detailResponse.body.snapshot.previewNodes).toHaveLength(1);
+    expect(detailResponse.body.snapshot.nodeLinkSetIds).toEqual(nodeLinkSetIds);
+    expect(detailResponse.body.snapshot.preferredAddressSetIds).toEqual(preferredAddressSetIds);
   });
 
   it('previews nodes, publishes a subscription, serves it publicly, and restores input state', async () => {
     const app = buildApp();
     await app.ready();
     const { accessToken } = await createUserAndLogin(app.server);
+    const nodeLinkSetIds = [crypto.randomUUID(), crypto.randomUUID()];
+    const preferredAddressSetIds = [crypto.randomUUID()];
 
     const previewResponse = await request(app.server)
       .post('/generator/preview')
@@ -89,6 +97,8 @@ describe('preview and subscriptions', () => {
       .post('/subscriptions')
       .set('authorization', `Bearer ${accessToken}`)
       .send({
+        nodeLinkSetIds,
+        preferredAddressSetIds,
         nodeLinksInput: SAMPLE_VMESS,
         preferredAddressesInput: '104.16.1.2#HK',
         namePrefix: 'CF',
@@ -114,6 +124,8 @@ describe('preview and subscriptions', () => {
 
     expect(restoreResponse.status).toBe(200);
     expect(restoreResponse.body.nodeLinksInput).toContain('vmess://');
+    expect(restoreResponse.body.nodeLinkSetIds).toEqual(nodeLinkSetIds);
+    expect(restoreResponse.body.preferredAddressSetIds).toEqual(preferredAddressSetIds);
   });
 
   it('restores raw inputs but requires regenerate before republish', async () => {

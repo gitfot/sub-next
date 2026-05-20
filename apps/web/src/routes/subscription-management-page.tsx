@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   deleteSubscription,
   getSubscriptionDetail,
+  listDatasets,
   listSubscriptions,
   restoreSubscription,
+  type DatasetItem,
   type SubscriptionDetail,
   type SubscriptionListItem,
 } from '../features/data-management/api.js';
@@ -29,6 +31,8 @@ function getStatusBadge(status?: string) {
 export function SubscriptionManagementPage() {
   const [items, setItems] = useState<SubscriptionListItem[]>([]);
   const [detail, setDetail] = useState<SubscriptionDetail | null>(null);
+  const [nodeDatasets, setNodeDatasets] = useState<DatasetItem[]>([]);
+  const [preferredDatasets, setPreferredDatasets] = useState<DatasetItem[]>([]);
   const navigate = useNavigate();
 
   async function refresh() {
@@ -38,6 +42,19 @@ export function SubscriptionManagementPage() {
 
   useEffect(() => {
     void refresh();
+  }, []);
+
+  useEffect(() => {
+    void Promise.all([
+      listDatasets('node-links'),
+      listDatasets('preferred-addresses'),
+    ]).then(([nodePayload, preferredPayload]) => {
+      setNodeDatasets(nodePayload.items ?? []);
+      setPreferredDatasets(preferredPayload.items ?? []);
+    }).catch(() => {
+      setNodeDatasets([]);
+      setPreferredDatasets([]);
+    });
   }, []);
 
   useEffect(() => {
@@ -72,6 +89,10 @@ export function SubscriptionManagementPage() {
     if (typeof node.name === 'string' && node.name.trim()) return node.name;
     return `节点 ${index + 1}`;
   });
+  const nodeDatasetNameMap = new Map(nodeDatasets.map((item) => [item.id, item.name]));
+  const preferredDatasetNameMap = new Map(preferredDatasets.map((item) => [item.id, item.name]));
+  const selectedNodeSourceNames = (detail?.snapshot.nodeLinkSetIds ?? []).map((id) => nodeDatasetNameMap.get(id) ?? id);
+  const selectedPreferredSourceNames = (detail?.snapshot.preferredAddressSetIds ?? []).map((id) => preferredDatasetNameMap.get(id) ?? id);
 
   return (
     <>
@@ -162,6 +183,10 @@ export function SubscriptionManagementPage() {
                   </div>
                 </div>
               ) : null}
+              <div className="panel-subtitle">节点链接来源</div>
+              <textarea rows={2} value={selectedNodeSourceNames.join('\n') || '-'} readOnly />
+              <div className="panel-subtitle">优选地址来源</div>
+              <textarea rows={2} value={selectedPreferredSourceNames.join('\n') || '-'} readOnly />
               <div className="panel-subtitle">原始节点链接输入</div>
               <textarea rows={3} value={detail.snapshot.nodeLinksInput || '-'} readOnly />
               <div className="panel-subtitle">原始优选地址输入</div>

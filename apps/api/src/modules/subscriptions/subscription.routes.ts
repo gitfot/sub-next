@@ -17,8 +17,14 @@ export async function subscriptionRoutes(app: FastifyInstance) {
   app.post('/', { preHandler: requireUser }, async (request, reply) => {
     const input = publishSubscriptionSchema.parse(request.body);
     const env = getEnv();
+    const nodeLinkSetIds = input.nodeLinkSetIds ?? (input.nodeLinkSetId ? [input.nodeLinkSetId] : []);
+    const preferredAddressSetIds = input.preferredAddressSetIds ?? (input.preferredAddressSetId ? [input.preferredAddressSetId] : []);
+    const nodeLinkSetId = input.nodeLinkSetId ?? (nodeLinkSetIds.length === 1 ? nodeLinkSetIds[0] : undefined);
+    const preferredAddressSetId = input.preferredAddressSetId ?? (preferredAddressSetIds.length === 1 ? preferredAddressSetIds[0] : undefined);
     const result = await createSubscription(request.user.id, {
       publicBaseUrl: env.API_BASE_URL,
+      ...(nodeLinkSetIds.length ? { nodeLinkSetIds } : {}),
+      ...(preferredAddressSetIds.length ? { preferredAddressSetIds } : {}),
       nodeLinksInput: input.nodeLinksInput,
       preferredAddressesInput: input.preferredAddressesInput,
       keepOriginalHost: input.keepOriginalHost,
@@ -26,8 +32,8 @@ export async function subscriptionRoutes(app: FastifyInstance) {
       remark: input.remark,
       expiresAt: input.expiresAt,
       subscriptionType: input.subscriptionType,
-      ...(input.nodeLinkSetId ? { nodeLinkSetId: input.nodeLinkSetId } : {}),
-      ...(input.preferredAddressSetId ? { preferredAddressSetId: input.preferredAddressSetId } : {}),
+      ...(nodeLinkSetId ? { nodeLinkSetId } : {}),
+      ...(preferredAddressSetId ? { preferredAddressSetId } : {}),
       ...(input.namePrefix ? { namePrefix: input.namePrefix } : {}),
     });
 
