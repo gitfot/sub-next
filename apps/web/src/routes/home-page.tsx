@@ -113,6 +113,7 @@ export function HomePage() {
   const [subscriptionType, setSubscriptionType] = useState<'clash' | 'v2rayn' | 'shadowrocket' | 'surge'>(initialDraft.subscriptionType);
   const [remark, setRemark] = useState(initialDraft.remark);
   const [publicUrl, setPublicUrl] = useState('');
+  const [showResultModal, setShowResultModal] = useState(false);
   const [requiresRegenerate, setRequiresRegenerate] = useState(initialDraft.requiresRegenerate);
   const expiresAt = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), []);
 
@@ -191,6 +192,11 @@ export function HomePage() {
       ...(namePrefix ? { namePrefix } : {}),
     });
     setPublicUrl(payload.publicUrl ?? '');
+    setShowResultModal(true);
+  }
+
+  function closeResultModal() {
+    setShowResultModal(false);
   }
 
   function toggleNodeDataset(id: string, checked: boolean) {
@@ -365,14 +371,27 @@ export function HomePage() {
             生成订阅
           </button>
         </div>
-        {publicUrl ? (
-          <div className="result-box">
-            <input readOnly value={publicUrl} />
-            <button type="button" className="btn btn-secondary btn-sm" onClick={handleCopyUrl}>复制</button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/data/subscriptions')}>订阅管理</button>
-          </div>
-        ) : null}
       </section>
+
+      {showResultModal && publicUrl ? (
+        <div className="modal-overlay" role="presentation" onClick={closeResultModal}>
+          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="result-modal-title" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <h3 id="result-modal-title">订阅链接</h3>
+              <button type="button" className="modal-close" onClick={closeResultModal} aria-label="关闭">&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="result-box">
+                <input readOnly value={publicUrl} aria-label="订阅链接" />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={handleCopyUrl}>复制</button>
+              <button type="button" className="btn btn-primary" onClick={() => navigate('/data/subscriptions')}>订阅管理</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
