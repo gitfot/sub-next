@@ -9,6 +9,7 @@ const apiPackageJsonPath = path.join(rootDir, 'apps', 'api', 'package.json');
 
 function readPackageJson(filePath: string) {
   return JSON.parse(readFileSync(filePath, 'utf8')) as {
+    scripts?: Record<string, string>;
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
@@ -25,5 +26,11 @@ describe('Prisma workspace setup', () => {
     expect(rootPackageJson.devDependencies?.['@prisma/client']).toBe(
       apiPackageJson.dependencies?.['@prisma/client'],
     );
+  });
+
+  it('runs prisma generate from the root postinstall hook', () => {
+    const rootPackageJson = readPackageJson(rootPackageJsonPath);
+
+    expect(rootPackageJson.scripts?.postinstall).toBe('prisma generate');
   });
 });
