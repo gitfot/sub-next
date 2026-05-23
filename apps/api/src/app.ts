@@ -18,8 +18,7 @@ export function buildApp() {
   const hasWebBuild = existsSync(webIndexFile);
 
   app.register(cors, {
-    origin: env.WEB_ORIGIN,
-    credentials: true,
+    origin: true,
   });
 
   app.register(rateLimit, {

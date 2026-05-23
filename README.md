@@ -70,9 +70,7 @@ cp .env.example .env
 | `JWT_ACCESS_SECRET` | JWT 访问令牌签名密钥 |
 | `JWT_REFRESH_SECRET` | JWT 刷新令牌签名密钥 |
 | `ADMIN_PASSWORD` | 注册时使用的管理员密码 |
-| `PUBLIC_BASE_URL` | 公开访问地址 |
-| `API_BASE_URL` | API 地址 |
-| `WEB_ORIGIN` | 前端地址（CORS） |
+| `PUBLIC_BASE_URL` | 公开访问地址，用于生成公开订阅链接 |
 
 ### 启动开发环境
 

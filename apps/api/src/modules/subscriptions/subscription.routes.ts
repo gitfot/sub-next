@@ -22,7 +22,7 @@ export async function subscriptionRoutes(app: FastifyInstance) {
     const nodeLinkSetId = input.nodeLinkSetId ?? (nodeLinkSetIds.length === 1 ? nodeLinkSetIds[0] : undefined);
     const preferredAddressSetId = input.preferredAddressSetId ?? (preferredAddressSetIds.length === 1 ? preferredAddressSetIds[0] : undefined);
     const result = await createSubscription(request.user.id, {
-      publicBaseUrl: env.API_BASE_URL,
+      publicBaseUrl: env.PUBLIC_BASE_URL,
       ...(nodeLinkSetIds.length ? { nodeLinkSetIds } : {}),
       ...(preferredAddressSetIds.length ? { preferredAddressSetIds } : {}),
       nodeLinksInput: input.nodeLinksInput,
@@ -40,18 +40,18 @@ export async function subscriptionRoutes(app: FastifyInstance) {
     return reply.status(201).send({
       subscription: result.subscription,
       publicToken: result.publicToken,
-      publicUrl: `${env.API_BASE_URL}/subscriptions/public/${result.publicToken}`,
+      publicUrl: `${env.PUBLIC_BASE_URL}/subscriptions/public/${result.publicToken}`,
     });
   });
 
   app.get('/', { preHandler: requireUser }, async (request) => {
     const env = getEnv();
-    return { items: await listSubscriptions(request.user.id, env.API_BASE_URL) };
+    return { items: await listSubscriptions(request.user.id, env.PUBLIC_BASE_URL) };
   });
 
   app.get('/:id', { preHandler: requireUser }, async (request, reply) => {
     const env = getEnv();
-    const detail = await getSubscriptionDetail(request.user.id, (request.params as { id: string }).id, env.API_BASE_URL);
+    const detail = await getSubscriptionDetail(request.user.id, (request.params as { id: string }).id, env.PUBLIC_BASE_URL);
     if (!detail) {
       return reply.status(404).send({ message: 'Subscription not found' });
     }
