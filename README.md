@@ -152,10 +152,9 @@ pnpm db:migrate       # 数据库迁移
 使用 Docker Compose 单镜像一体化部署：
 
 ```bash
-cd deploy
-cp ../.env.example ../.env
-# 编辑 ../.env 配置
-APP_IMAGE_TAG=latest docker compose up -d
+cp deploy/.env.example deploy/.env
+# 编辑 deploy/.env 配置
+docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 ```
 
 ## License

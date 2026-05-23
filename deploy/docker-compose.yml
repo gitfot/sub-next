@@ -3,9 +3,9 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_DB: sub_next
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-sub_next}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
@@ -20,13 +20,16 @@ services:
   app:
     image: ghcr.io/gitfot/sub-next:${APP_IMAGE_TAG:-latest}
     restart: unless-stopped
-    env_file:
-      - ../.env
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sub_next
-      API_BASE_URL: http://localhost:4000
-      PUBLIC_BASE_URL: http://localhost:4000
-      WEB_ORIGIN: http://localhost:4000
+      DATABASE_URL: ${DATABASE_URL}
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:4000}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:4000}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:4000}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-10}
+      RATE_LIMIT_TIME_WINDOW: ${RATE_LIMIT_TIME_WINDOW:-1 minute}
     ports:
       - "4000:4000"
     depends_on:
