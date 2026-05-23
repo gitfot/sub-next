@@ -120,23 +120,23 @@ export function NodeLinkPage() {
 
       {isEditing ? (
         <div className="modal-overlay" role="presentation" onClick={() => { setIsEditing(false); setForm(emptyForm); }}>
-          <div className="modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="node-link-dataset-modal-title" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
-              <h3>{form.id ? '编辑节点链接数据集' : '新增节点链接数据集'}</h3>
+              <h3 id="node-link-dataset-modal-title">{form.id ? '编辑节点链接数据集' : '新增节点链接数据集'}</h3>
               <button type="button" className="modal-close" onClick={() => { setIsEditing(false); setForm(emptyForm); }}>&times;</button>
             </div>
             <div className="modal-body">
               <div>
-                <label>名称</label>
-                <input type="text" placeholder="给数据集起个名字" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+                <label htmlFor="node-link-dataset-name">名称</label>
+                <input id="node-link-dataset-name" type="text" placeholder="给数据集起个名字" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
               </div>
               <div>
-                <label>描述（可选）</label>
-                <input type="text" placeholder="简短描述用途" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
+                <label htmlFor="node-link-dataset-description">描述（可选）</label>
+                <input id="node-link-dataset-description" type="text" placeholder="简短描述用途" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
               </div>
               <div>
-                <label>节点内容</label>
-                <textarea rows={8} placeholder={'vmess://...\nvless://...\ntrojan://...\n一行一个'} value={form.content} onChange={(event) => setForm({ ...form, content: event.target.value })} />
+                <label htmlFor="node-link-dataset-content">节点内容</label>
+                <textarea id="node-link-dataset-content" rows={8} placeholder={'vmess://...\nvless://...\ntrojan://...\n一行一个'} value={form.content} onChange={(event) => setForm({ ...form, content: event.target.value })} />
               </div>
             </div>
             <div className="modal-footer">

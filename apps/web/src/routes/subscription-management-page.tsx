@@ -148,58 +148,58 @@ export function SubscriptionManagementPage() {
 
       {detail ? (
         <div className="modal-overlay" role="presentation" onClick={() => setDetail(null)}>
-          <div className="modal" style={{ maxWidth: 640 }} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+          <div className="modal" style={{ maxWidth: 640 }} role="dialog" aria-modal="true" aria-labelledby="subscription-detail-title" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
-              <h3>订阅详情</h3>
+              <h3 id="subscription-detail-title">订阅详情</h3>
               <button type="button" className="modal-close" onClick={() => setDetail(null)}>&times;</button>
             </div>
             <div className="modal-body">
               <div className="col-2">
                 <div>
-                  <label>备注</label>
-                  <input type="text" value={detail.subscription.remark} readOnly />
+                  <label htmlFor="subscription-detail-remark">备注</label>
+                  <input id="subscription-detail-remark" type="text" value={detail.subscription.remark} readOnly />
                 </div>
                 <div>
-                  <label>订阅类型</label>
-                  <input type="text" value={detail.subscription.subscriptionType} readOnly />
+                  <label htmlFor="subscription-detail-type">订阅类型</label>
+                  <input id="subscription-detail-type" type="text" value={detail.subscription.subscriptionType} readOnly />
                 </div>
               </div>
               <div className="col-2">
                 <div>
-                  <label>创建时间</label>
-                  <input type="text" value={formatDateTime(detail.subscription.createdAt)} readOnly />
+                  <label htmlFor="subscription-detail-created-at">创建时间</label>
+                  <input id="subscription-detail-created-at" type="text" value={formatDateTime(detail.subscription.createdAt)} readOnly />
                 </div>
                 <div>
-                  <label>有效期至</label>
-                  <input type="text" value={formatDateTime(detail.subscription.expiresAt)} readOnly />
+                  <label htmlFor="subscription-detail-expires-at">有效期至</label>
+                  <input id="subscription-detail-expires-at" type="text" value={formatDateTime(detail.subscription.expiresAt)} readOnly />
                 </div>
               </div>
               {detail.subscription.publicUrl ? (
                 <div>
-                  <label>公共链接</label>
+                  <label htmlFor="subscription-detail-public-url">公共链接</label>
                   <div className="result-box">
-                    <input type="text" value={detail.subscription.publicUrl} readOnly />
+                    <input id="subscription-detail-public-url" type="text" value={detail.subscription.publicUrl} readOnly />
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleCopy(detail.subscription.publicUrl)}>复制</button>
                   </div>
                 </div>
               ) : null}
-              <div className="panel-subtitle">节点链接来源</div>
-              <textarea rows={2} value={selectedNodeSourceNames.join('\n') || '-'} readOnly />
-              <div className="panel-subtitle">优选地址来源</div>
-              <textarea rows={2} value={selectedPreferredSourceNames.join('\n') || '-'} readOnly />
-              <div className="panel-subtitle">原始节点链接输入</div>
-              <textarea rows={3} value={detail.snapshot.nodeLinksInput || '-'} readOnly />
-              <div className="panel-subtitle">原始优选地址输入</div>
-              <textarea rows={3} value={detail.snapshot.preferredAddressesInput || '-'} readOnly />
+              <label className="panel-subtitle" htmlFor="subscription-detail-node-sources">节点链接来源</label>
+              <textarea id="subscription-detail-node-sources" rows={2} value={selectedNodeSourceNames.join('\n') || '-'} readOnly />
+              <label className="panel-subtitle" htmlFor="subscription-detail-preferred-sources">优选地址来源</label>
+              <textarea id="subscription-detail-preferred-sources" rows={2} value={selectedPreferredSourceNames.join('\n') || '-'} readOnly />
+              <label className="panel-subtitle" htmlFor="subscription-detail-node-links-input">原始节点链接输入</label>
+              <textarea id="subscription-detail-node-links-input" rows={3} value={detail.snapshot.nodeLinksInput || '-'} readOnly />
+              <label className="panel-subtitle" htmlFor="subscription-detail-preferred-addresses-input">原始优选地址输入</label>
+              <textarea id="subscription-detail-preferred-addresses-input" rows={3} value={detail.snapshot.preferredAddressesInput || '-'} readOnly />
               <div className="panel-subtitle">生成器选项</div>
               <div className="col-2">
                 <div>
-                  <label>备注前缀</label>
-                  <input type="text" value={detail.snapshot.namePrefix || '-'} readOnly />
+                  <label htmlFor="subscription-detail-name-prefix">备注前缀</label>
+                  <input id="subscription-detail-name-prefix" type="text" value={detail.snapshot.namePrefix || '-'} readOnly />
                 </div>
                 <div>
-                  <label>保留原 Host/SNI</label>
-                  <input type="text" value={detail.snapshot.keepOriginalHost ? '是' : '否'} readOnly />
+                  <label htmlFor="subscription-detail-keep-original-host">保留原 Host/SNI</label>
+                  <input id="subscription-detail-keep-original-host" type="text" value={detail.snapshot.keepOriginalHost ? '是' : '否'} readOnly />
                 </div>
               </div>
               {previewNodeNames.length ? (

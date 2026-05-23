@@ -64,10 +64,10 @@ describe('data management pages', () => {
       </MemoryRouter>,
     );
 
-    await user.click(await screen.findByRole('button', { name: '新增节点链接' }));
+    await user.click(await screen.findByRole('button', { name: /新增节点链接/ }));
     await user.type(screen.getByLabelText('名称'), '香港节点');
-    await user.type(screen.getByLabelText('描述'), '首选');
-    await user.type(screen.getByLabelText('内容'), 'vmess://demo');
+    await user.type(screen.getByLabelText(/描述/), '首选');
+    await user.type(screen.getByLabelText('节点内容'), 'vmess://demo');
     await user.click(screen.getByRole('button', { name: '保存' }));
 
     expect(await screen.findByText('香港节点')).toBeInTheDocument();
@@ -75,8 +75,8 @@ describe('data management pages', () => {
     await user.click(screen.getByRole('button', { name: '编辑' }));
     await user.clear(screen.getByLabelText('名称'));
     await user.type(screen.getByLabelText('名称'), '香港节点-更新');
-    await user.clear(screen.getByLabelText('内容'));
-    await user.type(screen.getByLabelText('内容'), 'vmess://updated');
+    await user.clear(screen.getByLabelText('节点内容'));
+    await user.type(screen.getByLabelText('节点内容'), 'vmess://updated');
     await user.click(screen.getByRole('button', { name: '保存' }));
 
     expect(await screen.findByText('香港节点-更新')).toBeInTheDocument();
@@ -137,9 +137,9 @@ describe('data management pages', () => {
       </MemoryRouter>,
     );
 
-    await user.click(await screen.findByRole('button', { name: '新增优选地址' }));
+    await user.click(await screen.findByRole('button', { name: /新增优选地址/ }));
     await user.type(screen.getByLabelText('名称'), 'Cloudflare 优选');
-    await user.type(screen.getByLabelText('内容'), '104.16.1.2#HK');
+    await user.type(screen.getByLabelText('优选地址内容'), '104.16.1.2#HK');
     await user.click(screen.getByRole('button', { name: '保存' }));
 
     expect(await screen.findByText('Cloudflare 优选')).toBeInTheDocument();
@@ -147,9 +147,9 @@ describe('data management pages', () => {
     await user.click(screen.getByRole('button', { name: '编辑' }));
     await user.clear(screen.getByLabelText('名称'));
     await user.type(screen.getByLabelText('名称'), 'Cloudflare 优选-更新');
-    await user.type(screen.getByLabelText('描述'), '带 2053 端口');
-    await user.clear(screen.getByLabelText('内容'));
-    await user.type(screen.getByLabelText('内容'), '104.17.2.3:2053#US');
+    await user.type(screen.getByLabelText(/描述/), '带 2053 端口');
+    await user.clear(screen.getByLabelText('优选地址内容'));
+    await user.type(screen.getByLabelText('优选地址内容'), '104.17.2.3:2053#US');
     await user.click(screen.getByRole('button', { name: '保存' }));
 
     expect(await screen.findByText('Cloudflare 优选-更新')).toBeInTheDocument();
@@ -267,11 +267,11 @@ describe('subscription management', () => {
     await user.click(screen.getByRole('button', { name: '详情' }));
     const dialog = await screen.findByRole('dialog', { name: '订阅详情' });
     expect(dialog).toBeInTheDocument();
-    expect(within(dialog).getByText('测试订阅')).toBeInTheDocument();
-    expect(within(dialog).getByText('vmess://demo')).toBeInTheDocument();
-    expect(within(dialog).getByText('104.16.1.2#HK')).toBeInTheDocument();
-    expect(within(dialog).getByDisplayValue('机场A\n机场B')).toBeInTheDocument();
-    expect(within(dialog).getByDisplayValue('Cloudflare\nAnycast')).toBeInTheDocument();
+    expect(within(dialog).getByLabelText('备注')).toHaveValue('测试订阅');
+    expect(within(dialog).getByLabelText('原始节点链接输入')).toHaveValue('vmess://demo\ntrojan://demo-2');
+    expect(within(dialog).getByLabelText('原始优选地址输入')).toHaveValue('104.16.1.2#HK\n104.17.2.3:2053#US');
+    expect(within(dialog).getByLabelText('节点链接来源')).toHaveValue('机场A\n机场B');
+    expect(within(dialog).getByLabelText('优选地址来源')).toHaveValue('Cloudflare\nAnycast');
     const subscriptionRow = screen.getByText('测试订阅').closest('tr');
     expect(subscriptionRow).not.toBeNull();
     expect(within(subscriptionRow as HTMLTableRowElement).queryByRole('button', { name: '复制' })).not.toBeInTheDocument();

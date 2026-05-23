@@ -120,23 +120,23 @@ export function PreferredAddressPage() {
 
       {isEditing ? (
         <div className="modal-overlay" role="presentation" onClick={() => { setIsEditing(false); setForm(emptyForm); }}>
-          <div className="modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="preferred-address-dataset-modal-title" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
-              <h3>{form.id ? '编辑优选地址数据集' : '新增优选地址数据集'}</h3>
+              <h3 id="preferred-address-dataset-modal-title">{form.id ? '编辑优选地址数据集' : '新增优选地址数据集'}</h3>
               <button type="button" className="modal-close" onClick={() => { setIsEditing(false); setForm(emptyForm); }}>&times;</button>
             </div>
             <div className="modal-body">
               <div>
-                <label>名称</label>
-                <input type="text" placeholder="给数据集起个名字" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+                <label htmlFor="preferred-address-dataset-name">名称</label>
+                <input id="preferred-address-dataset-name" type="text" placeholder="给数据集起个名字" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
               </div>
               <div>
-                <label>描述（可选）</label>
-                <input type="text" placeholder="简短描述用途" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
+                <label htmlFor="preferred-address-dataset-description">描述（可选）</label>
+                <input id="preferred-address-dataset-description" type="text" placeholder="简短描述用途" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
               </div>
               <div>
-                <label>优选地址内容</label>
-                <textarea rows={8} placeholder={'host[:port][#remark]\n每行一个，例如：\n104.16.1.2#HK\n104.17.2.3:2053#US'} value={form.content} onChange={(event) => setForm({ ...form, content: event.target.value })} />
+                <label htmlFor="preferred-address-dataset-content">优选地址内容</label>
+                <textarea id="preferred-address-dataset-content" rows={8} placeholder={'host[:port][#remark]\n每行一个，例如：\n104.16.1.2#HK\n104.17.2.3:2053#US'} value={form.content} onChange={(event) => setForm({ ...form, content: event.target.value })} />
               </div>
             </div>
             <div className="modal-footer">

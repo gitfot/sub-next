@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -8,6 +8,7 @@ import { routes } from '../../app/router.js';
 
 describe('app shell', () => {
   afterEach(() => {
+    cleanup();
     localStorage.clear();
     vi.restoreAllMocks();
   });
@@ -20,7 +21,7 @@ describe('app shell', () => {
     render(<RouterProvider router={router} />);
 
     expect(await screen.findByRole('button', { name: '登录' })).toBeInTheDocument();
-    expect(screen.getByLabelText('账号')).toBeInTheDocument();
+    expect(screen.getByLabelText(/账号/)).toBeInTheDocument();
   });
 
   it('renders a compact account menu for authenticated pages', async () => {
@@ -50,7 +51,7 @@ describe('app shell', () => {
     await user.click(screen.getByRole('button', { name: '打开账户菜单' }));
 
     expect(await screen.findByText('admin')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '退出登录' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: '退出登录' })).toBeInTheDocument();
   });
 
   it('redirects /data to the first data tab and marks it active', async () => {

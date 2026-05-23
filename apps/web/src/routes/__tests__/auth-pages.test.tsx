@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -7,6 +7,7 @@ import { RegisterPage } from '../register-page.js';
 
 describe('auth pages', () => {
   afterEach(() => {
+    cleanup();
     vi.restoreAllMocks();
   });
 
@@ -26,8 +27,8 @@ describe('auth pages', () => {
       </MemoryRouter>,
     );
 
-    await user.type(screen.getByLabelText('账号'), 'demo@example.com');
-    await user.type(screen.getByLabelText('密码'), 'wrong-password');
+    await user.type(screen.getByLabelText(/账号/), 'demo@example.com');
+    await user.type(screen.getByLabelText(/密码/), 'wrong-password');
     await user.click(screen.getByRole('button', { name: '登录' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('请求过于频繁，请 32 秒后再试');
@@ -49,9 +50,9 @@ describe('auth pages', () => {
       </MemoryRouter>,
     );
 
-    await user.type(screen.getByLabelText('邮箱'), 'demo@example.com');
-    await user.type(screen.getByLabelText('用户名'), 'demo_user');
-    await user.type(screen.getByLabelText('密码'), 'strong-password');
+    await user.type(screen.getByLabelText(/邮箱/), 'demo@example.com');
+    await user.type(screen.getByLabelText(/用户名/), 'demo_user');
+    await user.type(screen.getByLabelText(/密码/), 'strong-password');
     await user.click(screen.getByRole('button', { name: '注册' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('请求过于频繁，请 18 秒后再试');
