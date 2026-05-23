@@ -23,6 +23,8 @@ interface RestoreState {
   requiresRegenerate?: boolean;
 }
 
+type DatasetDraftMap = Record<string, string>;
+
 function normalizeSelectedIds(ids?: string[]) {
   return Array.isArray(ids) ? ids.filter((item) => item.trim()) : [];
 }
@@ -42,12 +44,32 @@ function getNonEmptyLines(value: string) {
     .filter(Boolean);
 }
 
-function countDatasetLines(ids: string[], datasets: DatasetItem[]) {
+function splitManualInputs(value?: string) {
+  if (typeof value !== 'string' || !value.trim()) {
+    return [];
+  }
+
+  return getNonEmptyLines(value);
+}
+
+function countDatasetLines(ids: string[], datasets: DatasetItem[], draftEdits: DatasetDraftMap) {
   const selectedSet = new Set(ids);
 
   return datasets
     .filter((item) => selectedSet.has(item.id))
-    .reduce((total, item) => total + getNonEmptyLines(item.content).length, 0);
+    .reduce((total, item) => total + getNonEmptyLines(draftEdits[item.id] ?? item.content).length, 0);
+}
+
+function buildCombinedInput(ids: string[], datasets: DatasetItem[], draftEdits: DatasetDraftMap, manualInputs: string[]) {
+  const selectedSet = new Set(ids);
+  const datasetLines = datasets
+    .filter((item) => selectedSet.has(item.id))
+    .flatMap((item) => getNonEmptyLines(draftEdits[item.id] ?? item.content));
+  const manualLines = manualInputs
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return [...datasetLines, ...manualLines].join('\n');
 }
 
 function toggleExpandedId(current: string[], id: string) {
@@ -75,6 +97,8 @@ export function HomePage() {
     ...(restoreState?.preferredAddressSetIds ? { preferredAddressSetIds: normalizeSelectedIds(restoreState.preferredAddressSetIds) } : {}),
     ...(restoreState?.nodeLinksInput !== undefined ? { nodeLinksInput: restoreState.nodeLinksInput } : {}),
     ...(restoreState?.preferredAddressesInput !== undefined ? { preferredAddressesInput: restoreState.preferredAddressesInput } : {}),
+    ...(restoreState?.nodeLinksInput !== undefined ? { nodeLinkManualInputs: splitManualInputs(restoreState.nodeLinksInput) } : {}),
+    ...(restoreState?.preferredAddressesInput !== undefined ? { preferredAddressManualInputs: splitManualInputs(restoreState.preferredAddressesInput) } : {}),
     ...(restoreState?.namePrefix !== undefined ? { namePrefix: restoreState.namePrefix } : {}),
     ...(restoreState?.keepOriginalHost !== undefined ? { keepOriginalHost: restoreState.keepOriginalHost } : {}),
     ...(restoreState?.previewNodes !== undefined ? { previewNodes: restoreState.previewNodes } : {}),
@@ -84,10 +108,12 @@ export function HomePage() {
   const [preferredDatasets, setPreferredDatasets] = useState<DatasetItem[]>([]);
   const [nodeLinkSetIds, setNodeLinkSetIds] = useState<string[]>(initialDraft.nodeLinkSetIds ?? []);
   const [preferredAddressSetIds, setPreferredAddressSetIds] = useState<string[]>(initialDraft.preferredAddressSetIds ?? []);
-  const [nodeLinksInput, setNodeLinksInput] = useState(initialDraft.nodeLinksInput);
-  const [preferredAddressesInput, setPreferredAddressesInput] = useState(initialDraft.preferredAddressesInput);
-  const [expandedNodeDatasetIds, setExpandedNodeDatasetIds] = useState<string[]>([]);
-  const [expandedPreferredDatasetIds, setExpandedPreferredDatasetIds] = useState<string[]>([]);
+  const [nodeLinkManualInputs, setNodeLinkManualInputs] = useState<string[]>(initialDraft.nodeLinkManualInputs);
+  const [preferredAddressManualInputs, setPreferredAddressManualInputs] = useState<string[]>(initialDraft.preferredAddressManualInputs);
+  const [nodeDatasetDraftEdits, setNodeDatasetDraftEdits] = useState<DatasetDraftMap>(initialDraft.nodeDatasetDraftEdits);
+  const [preferredDatasetDraftEdits, setPreferredDatasetDraftEdits] = useState<DatasetDraftMap>(initialDraft.preferredDatasetDraftEdits);
+  const [expandedNodeDatasetIds, setExpandedNodeDatasetIds] = useState<string[]>(initialDraft.expandedNodeDatasetIds);
+  const [expandedPreferredDatasetIds, setExpandedPreferredDatasetIds] = useState<string[]>(initialDraft.expandedPreferredDatasetIds);
   const [namePrefix, setNamePrefix] = useState(initialDraft.namePrefix);
   const [keepOriginalHost, setKeepOriginalHost] = useState(initialDraft.keepOriginalHost);
   const [nodes, setNodes] = useState<PreviewNode[]>(initialDraft.previewNodes);
@@ -98,10 +124,18 @@ export function HomePage() {
   const [showResultModal, setShowResultModal] = useState(false);
   const [requiresRegenerate, setRequiresRegenerate] = useState(initialDraft.requiresRegenerate);
   const expiresAt = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), []);
+  const nodeLinksInput = useMemo(
+    () => buildCombinedInput(nodeLinkSetIds, nodeDatasets, nodeDatasetDraftEdits, nodeLinkManualInputs),
+    [nodeLinkSetIds, nodeDatasets, nodeDatasetDraftEdits, nodeLinkManualInputs],
+  );
+  const preferredAddressesInput = useMemo(
+    () => buildCombinedInput(preferredAddressSetIds, preferredDatasets, preferredDatasetDraftEdits, preferredAddressManualInputs),
+    [preferredAddressSetIds, preferredDatasets, preferredDatasetDraftEdits, preferredAddressManualInputs],
+  );
 
   const preferredCount = useMemo(
-    () => getNonEmptyLines(preferredAddressesInput).length + countDatasetLines(preferredAddressSetIds, preferredDatasets),
-    [preferredAddressesInput, preferredAddressSetIds, preferredDatasets],
+    () => countDatasetLines(preferredAddressSetIds, preferredDatasets, preferredDatasetDraftEdits) + preferredAddressManualInputs.filter((item) => item.trim()).length,
+    [preferredAddressSetIds, preferredDatasets, preferredDatasetDraftEdits, preferredAddressManualInputs],
   );
 
   useEffect(() => {
@@ -123,6 +157,12 @@ export function HomePage() {
       preferredAddressSetIds,
       nodeLinksInput,
       preferredAddressesInput,
+      nodeLinkManualInputs,
+      preferredAddressManualInputs,
+      nodeDatasetDraftEdits,
+      preferredDatasetDraftEdits,
+      expandedNodeDatasetIds,
+      expandedPreferredDatasetIds,
       namePrefix,
       keepOriginalHost,
       previewNodes: nodes,
@@ -136,6 +176,12 @@ export function HomePage() {
     preferredAddressSetIds,
     nodeLinksInput,
     preferredAddressesInput,
+    nodeLinkManualInputs,
+    preferredAddressManualInputs,
+    nodeDatasetDraftEdits,
+    preferredDatasetDraftEdits,
+    expandedNodeDatasetIds,
+    expandedPreferredDatasetIds,
     namePrefix,
     keepOriginalHost,
     nodes,
@@ -185,6 +231,7 @@ export function HomePage() {
     setNodes([]);
     setWarnings([]);
     setPublicUrl('');
+    setShowResultModal(false);
   }
 
   function toggleNodeDataset(id: string, checked: boolean) {
@@ -197,71 +244,109 @@ export function HomePage() {
     clearGeneratedState();
   }
 
+  function updateManualInput(current: string[], index: number, value: string) {
+    return current.map((item, itemIndex) => (itemIndex === index ? value : item));
+  }
+
+  function removeManualInput(current: string[], index: number) {
+    return current.filter((_, itemIndex) => itemIndex !== index);
+  }
+
   async function handleCopyUrl() {
     if (!publicUrl) return;
     await navigator.clipboard.writeText(publicUrl);
   }
 
   return (
-    <div className="main-grid">
-      <section className="panel home-panel">
+    <div className="main-grid home-page-grid">
+      <section className="panel home-page-panel">
         <div className="panel-title">输入配置</div>
-        <div className="home-panel-scroll" data-testid="home-input-scroll">
-          <HomeDatasetSourceSection
-            sourceLabel="节点链接来源"
-            sourceAriaLabel="节点链接来源"
-            emptyText="暂无可选数据集，直接在下方粘贴即可。"
-            manualLabel="节点链接"
-            textareaId="node-links"
-            textareaValue={nodeLinksInput}
-            textareaRows={6}
-            textareaPlaceholder="vmess://... vless://... trojan://...&#10;一行一个，支持 base64 订阅内容"
-            datasets={nodeDatasets}
-            selectedIds={nodeLinkSetIds}
-            expandedIds={expandedNodeDatasetIds}
-            onToggleSelected={toggleNodeDataset}
-            onToggleExpanded={(id) => setExpandedNodeDatasetIds((current) => toggleExpandedId(current, id))}
-            onTextareaChange={setNodeLinksInput}
-          />
-          <HomeDatasetSourceSection
-            sourceLabel="优选地址来源"
-            sourceAriaLabel="优选地址来源"
-            emptyText="暂无可选数据集，直接在下方粘贴即可。"
-            manualLabel="优选地址"
-            textareaId="preferred-addresses"
-            textareaValue={preferredAddressesInput}
-            textareaRows={4}
-            textareaPlaceholder="104.16.1.2#HK&#10;104.17.2.3:2053#US"
-            datasets={preferredDatasets}
-            selectedIds={preferredAddressSetIds}
-            expandedIds={expandedPreferredDatasetIds}
-            onToggleSelected={togglePreferredDataset}
-            onToggleExpanded={(id) => setExpandedPreferredDatasetIds((current) => toggleExpandedId(current, id))}
-            onTextareaChange={setPreferredAddressesInput}
-          />
-        </div>
-        <div className="home-panel-footer" data-testid="home-input-footer">
-          <div className="row home-footer-row">
-            <div>
-              <label htmlFor="name-prefix">备注前缀</label>
-              <input id="name-prefix" type="text" placeholder="例如 CF" value={namePrefix} onChange={(event) => setNamePrefix(event.target.value)} />
-            </div>
-            <label className="checkbox home-footer-checkbox">
-              <input type="checkbox" checked={keepOriginalHost} onChange={(event) => setKeepOriginalHost(event.target.checked)} />
-              保留原 Host/SNI
-            </label>
+        <div className="home-page-panel-body">
+          <div className="home-page-source-scroll">
+            <HomeDatasetSourceSection
+              sourceLabel="节点链接来源"
+              sourceAriaLabel="节点链接来源"
+              emptyText="暂无可选数据集，直接在下方粘贴即可。"
+              manualLabel="节点链接"
+              manualPlaceholder="vmess://... vless://... trojan://..."
+              datasets={nodeDatasets}
+              selectedIds={nodeLinkSetIds}
+              expandedIds={expandedNodeDatasetIds}
+              datasetDraftEdits={nodeDatasetDraftEdits}
+              manualInputs={nodeLinkManualInputs}
+              onToggleSelected={toggleNodeDataset}
+              onToggleExpanded={(id) => setExpandedNodeDatasetIds((current) => toggleExpandedId(current, id))}
+              onDatasetContentChange={(id, value) => {
+                setNodeDatasetDraftEdits((current) => ({ ...current, [id]: value }));
+                clearGeneratedState();
+              }}
+              onAddManualInput={() => {
+                setNodeLinkManualInputs((current) => [...current, '']);
+                clearGeneratedState();
+              }}
+              onManualInputChange={(index, value) => {
+                setNodeLinkManualInputs((current) => updateManualInput(current, index, value));
+                clearGeneratedState();
+              }}
+              onRemoveManualInput={(index) => {
+                setNodeLinkManualInputs((current) => removeManualInput(current, index));
+                clearGeneratedState();
+              }}
+            />
+            <HomeDatasetSourceSection
+              sourceLabel="优选地址来源"
+              sourceAriaLabel="优选地址来源"
+              emptyText="暂无可选数据集，直接在下方粘贴即可。"
+              manualLabel="优选地址"
+              manualPlaceholder="104.16.1.2#HK"
+              datasets={preferredDatasets}
+              selectedIds={preferredAddressSetIds}
+              expandedIds={expandedPreferredDatasetIds}
+              datasetDraftEdits={preferredDatasetDraftEdits}
+              manualInputs={preferredAddressManualInputs}
+              onToggleSelected={togglePreferredDataset}
+              onToggleExpanded={(id) => setExpandedPreferredDatasetIds((current) => toggleExpandedId(current, id))}
+              onDatasetContentChange={(id, value) => {
+                setPreferredDatasetDraftEdits((current) => ({ ...current, [id]: value }));
+                clearGeneratedState();
+              }}
+              onAddManualInput={() => {
+                setPreferredAddressManualInputs((current) => [...current, '']);
+                clearGeneratedState();
+              }}
+              onManualInputChange={(index, value) => {
+                setPreferredAddressManualInputs((current) => updateManualInput(current, index, value));
+                clearGeneratedState();
+              }}
+              onRemoveManualInput={(index) => {
+                setPreferredAddressManualInputs((current) => removeManualInput(current, index));
+                clearGeneratedState();
+              }}
+            />
           </div>
-          <div className="actions-row">
-            <button type="button" className="btn btn-primary" onClick={handlePreview}>
-              生成节点
-            </button>
+          <div className="home-page-input-footer">
+            <div className="row home-page-footer-row">
+              <div>
+                <label htmlFor="name-prefix">备注前缀</label>
+                <input id="name-prefix" type="text" placeholder="例如 CF" value={namePrefix} onChange={(event) => setNamePrefix(event.target.value)} />
+              </div>
+              <label className="checkbox" style={{ marginBottom: 6 }}>
+                <input type="checkbox" checked={keepOriginalHost} onChange={(event) => setKeepOriginalHost(event.target.checked)} />
+                保留原 Host/SNI
+              </label>
+            </div>
+            <div className="actions-row">
+              <button type="button" className="btn btn-primary" onClick={handlePreview}>
+                生成节点
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="panel home-panel">
+      <section className="panel home-page-panel">
         <div className="panel-title">生成结果</div>
-        <div className="home-panel-scroll" data-testid="home-result-scroll">
+        <div className="home-page-panel-body">
           {requiresRegenerate ? (
             <p className="text-muted">已从历史订阅恢复输入，请重新生成节点后再发布。</p>
           ) : null}
@@ -295,8 +380,6 @@ export function HomePage() {
               </article>
             ))}
           </div>
-        </div>
-        <div className="home-panel-footer" data-testid="home-result-footer">
           <div className="expire-row">
             <div>
               <label htmlFor="subscription-type">订阅类型</label>

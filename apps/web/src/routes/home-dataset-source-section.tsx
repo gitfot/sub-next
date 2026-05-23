@@ -12,16 +12,18 @@ interface HomeDatasetSourceSectionProps {
   sourceAriaLabel: string;
   emptyText: string;
   manualLabel: string;
-  textareaId: string;
-  textareaValue: string;
-  textareaRows: number;
-  textareaPlaceholder: string;
+  manualPlaceholder: string;
   datasets: DatasetItem[];
   selectedIds: string[];
   expandedIds: string[];
+  datasetDraftEdits: Record<string, string>;
+  manualInputs: string[];
   onToggleSelected: (id: string, checked: boolean) => void;
   onToggleExpanded: (id: string) => void;
-  onTextareaChange: (value: string) => void;
+  onDatasetContentChange: (id: string, value: string) => void;
+  onAddManualInput: () => void;
+  onManualInputChange: (index: number, value: string) => void;
+  onRemoveManualInput: (index: number) => void;
 }
 
 export function HomeDatasetSourceSection(props: HomeDatasetSourceSectionProps) {
@@ -30,7 +32,8 @@ export function HomeDatasetSourceSection(props: HomeDatasetSourceSectionProps) {
       <label>{props.sourceLabel}</label>
       <div className="dataset-cards" aria-label={props.sourceAriaLabel}>
         {props.datasets.length ? props.datasets.map((item) => {
-          const lines = getNonEmptyLines(item.content);
+          const currentContent = props.datasetDraftEdits[item.id] ?? item.content;
+          const lines = getNonEmptyLines(currentContent);
           const selected = props.selectedIds.includes(item.id);
           const expanded = props.expandedIds.includes(item.id);
 
@@ -61,11 +64,15 @@ export function HomeDatasetSourceSection(props: HomeDatasetSourceSectionProps) {
               </div>
               {expanded ? (
                 <div className="dataset-card-body">
-                  <div className="preview-lines">
-                    {lines.map((line, index) => (
-                      <div key={`${item.id}-${index}`} className="line">{line}</div>
-                    ))}
-                  </div>
+                  <label className="sr-only" htmlFor={`dataset-content-${item.id}`}>编辑 {item.name} 内容</label>
+                  <textarea
+                    id={`dataset-content-${item.id}`}
+                    className="dataset-content-editor"
+                    aria-label={`编辑 ${item.name} 内容`}
+                    rows={6}
+                    value={currentContent}
+                    onChange={(event) => props.onDatasetContentChange(item.id, event.target.value)}
+                  />
                 </div>
               ) : null}
             </article>
@@ -75,17 +82,43 @@ export function HomeDatasetSourceSection(props: HomeDatasetSourceSectionProps) {
         )}
       </div>
       <div className="manual-section">
-        <label htmlFor={props.textareaId}>{props.manualLabel}</label>
-        <textarea
-          className="fixed-multiline-input"
-          id={props.textareaId}
-          aria-label={props.manualLabel}
-          rows={props.textareaRows}
-          placeholder={props.textareaPlaceholder}
-          value={props.textareaValue}
-          onChange={(event) => props.onTextareaChange(event.target.value)}
-        />
-        <p className="text-muted">此处内容与上方数据集完全独立，互不影响。</p>
+        <div className="manual-section-header">
+          <span>{props.manualLabel}</span>
+          <button
+            type="button"
+            className="add-manual-btn"
+            aria-label={`新增${props.manualLabel}输入`}
+            onClick={props.onAddManualInput}
+          >
+            +
+          </button>
+        </div>
+        {props.manualInputs.length ? (
+          <div className="manual-input-list">
+            {props.manualInputs.map((value, index) => (
+              <div key={`${props.manualLabel}-${index}`} className="manual-input-row">
+                <label className="sr-only" htmlFor={`${props.manualLabel}-${index}`}>{props.manualLabel} {index + 1}</label>
+                <input
+                  id={`${props.manualLabel}-${index}`}
+                  type="text"
+                  className="manual-line-input"
+                  aria-label={`${props.manualLabel} ${index + 1}`}
+                  placeholder={props.manualPlaceholder}
+                  value={value}
+                  onChange={(event) => props.onManualInputChange(index, event.target.value)}
+                />
+                <button
+                  type="button"
+                  className="remove-manual-btn"
+                  aria-label={`删除${props.manualLabel} ${index + 1}`}
+                  onClick={() => props.onRemoveManualInput(index)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -12,6 +12,12 @@ export interface HomeDraft {
   preferredAddressSetIds: string[];
   nodeLinksInput: string;
   preferredAddressesInput: string;
+  nodeLinkManualInputs: string[];
+  preferredAddressManualInputs: string[];
+  nodeDatasetDraftEdits: Record<string, string>;
+  preferredDatasetDraftEdits: Record<string, string>;
+  expandedNodeDatasetIds: string[];
+  expandedPreferredDatasetIds: string[];
   namePrefix: string;
   keepOriginalHost: boolean;
   previewNodes: HomeDraftPreviewNode[];
@@ -37,6 +43,8 @@ interface LegacyDraftShape {
   preferredAddressSetId?: string;
   nodeLinkSetIds?: string[];
   preferredAddressSetIds?: string[];
+  nodeLinkManualInputs?: string[];
+  preferredAddressManualInputs?: string[];
 }
 
 function normalizeSelectedIds(value?: string[] | string) {
@@ -49,6 +57,21 @@ function normalizeSelectedIds(value?: string[] | string) {
   return [];
 }
 
+function normalizeManualInputs(inputs?: string[], fallbackValue?: string) {
+  if (Array.isArray(inputs)) {
+    return inputs.filter((item) => item.trim());
+  }
+
+  if (typeof fallbackValue !== 'string' || !fallbackValue.trim()) {
+    return [];
+  }
+
+  return fallbackValue
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 const STORAGE_KEY = 'sub-next-home-draft';
 
 export function getEmptyHomeDraft(): HomeDraft {
@@ -57,6 +80,12 @@ export function getEmptyHomeDraft(): HomeDraft {
     preferredAddressSetIds: [],
     nodeLinksInput: '',
     preferredAddressesInput: '',
+    nodeLinkManualInputs: [],
+    preferredAddressManualInputs: [],
+    nodeDatasetDraftEdits: {},
+    preferredDatasetDraftEdits: {},
+    expandedNodeDatasetIds: [],
+    expandedPreferredDatasetIds: [],
     namePrefix: '',
     keepOriginalHost: true,
     previewNodes: [],
@@ -79,6 +108,10 @@ export function loadHomeDraft(): HomeDraft {
       ...parsed,
       nodeLinkSetIds: normalizeSelectedIds(parsed.nodeLinkSetIds ?? parsed.nodeLinkSetId),
       preferredAddressSetIds: normalizeSelectedIds(parsed.preferredAddressSetIds ?? parsed.preferredAddressSetId),
+      nodeLinkManualInputs: normalizeManualInputs(parsed.nodeLinkManualInputs, parsed.nodeLinksInput),
+      preferredAddressManualInputs: normalizeManualInputs(parsed.preferredAddressManualInputs, parsed.preferredAddressesInput),
+      expandedNodeDatasetIds: normalizeSelectedIds(parsed.expandedNodeDatasetIds),
+      expandedPreferredDatasetIds: normalizeSelectedIds(parsed.expandedPreferredDatasetIds),
     };
   } catch {
     return getEmptyHomeDraft();
@@ -96,6 +129,8 @@ export function saveHomeDraftFromRestore(restore: RestoreDraftInput) {
     preferredAddressSetIds: normalizeSelectedIds(restore.preferredAddressSetIds),
     nodeLinksInput: restore.nodeLinksInput,
     preferredAddressesInput: restore.preferredAddressesInput,
+    nodeLinkManualInputs: normalizeManualInputs(undefined, restore.nodeLinksInput),
+    preferredAddressManualInputs: normalizeManualInputs(undefined, restore.preferredAddressesInput),
     namePrefix: restore.namePrefix,
     keepOriginalHost: restore.keepOriginalHost,
     previewNodes: restore.previewNodes ?? [],
