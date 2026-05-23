@@ -8,6 +8,7 @@ import {
 } from '../app/home-draft.js';
 import { listDatasets, type DatasetItem } from '../features/data-management/api.js';
 import { previewNodes, publishSubscription } from '../features/home/api.js';
+import { HomeDatasetSourceSection } from './home-dataset-source-section.js';
 
 type PreviewNode = HomeDraftPreviewNode;
 
@@ -26,54 +27,33 @@ function normalizeSelectedIds(ids?: string[]) {
   return Array.isArray(ids) ? ids.filter((item) => item.trim()) : [];
 }
 
-function splitLines(value: string) {
+function updateSelectedIds(current: string[], id: string, checked: boolean) {
+  if (checked) {
+    return current.includes(id) ? current : [...current, id];
+  }
+
+  return current.filter((item) => item !== id);
+}
+
+function getNonEmptyLines(value: string) {
   return value
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
 }
 
-function joinUniqueSections(sections: string[]) {
-  const lines: string[] = [];
-  const seen = new Set<string>();
+function countDatasetLines(ids: string[], datasets: DatasetItem[]) {
+  const selectedSet = new Set(ids);
 
-  for (const section of sections) {
-    for (const line of splitLines(section)) {
-      if (seen.has(line)) continue;
-      seen.add(line);
-      lines.push(line);
-    }
-  }
-
-  return lines.join('\n');
+  return datasets
+    .filter((item) => selectedSet.has(item.id))
+    .reduce((total, item) => total + getNonEmptyLines(item.content).length, 0);
 }
 
-function getDatasetContentMap(datasets: DatasetItem[]) {
-  return new Map(datasets.map((item) => [item.id, item.content]));
-}
-
-function getSelectedDatasetContent(ids: string[], datasets: DatasetItem[]) {
-  const contentMap = getDatasetContentMap(datasets);
-  return ids
-    .map((id) => contentMap.get(id) ?? '')
-    .filter((content) => content.trim())
-    .join('\n');
-}
-
-function removeDatasetLines(input: string, selectedIds: string[], datasets: DatasetItem[]) {
-  const selectedSet = new Set(selectedIds);
-  const allDatasetLines = new Set(
-    datasets.flatMap((item) => splitLines(item.content)),
-  );
-  const selectedDatasetLines = new Set(
-    datasets
-      .filter((item) => selectedSet.has(item.id))
-      .flatMap((item) => splitLines(item.content)),
-  );
-
-  return splitLines(input)
-    .filter((line) => !allDatasetLines.has(line) || selectedDatasetLines.has(line))
-    .join('\n');
+function toggleExpandedId(current: string[], id: string) {
+  return current.includes(id)
+    ? current.filter((item) => item !== id)
+    : [...current, id];
 }
 
 function getTagClass(type: string) {
@@ -106,6 +86,8 @@ export function HomePage() {
   const [preferredAddressSetIds, setPreferredAddressSetIds] = useState<string[]>(initialDraft.preferredAddressSetIds ?? []);
   const [nodeLinksInput, setNodeLinksInput] = useState(initialDraft.nodeLinksInput);
   const [preferredAddressesInput, setPreferredAddressesInput] = useState(initialDraft.preferredAddressesInput);
+  const [expandedNodeDatasetIds, setExpandedNodeDatasetIds] = useState<string[]>([]);
+  const [expandedPreferredDatasetIds, setExpandedPreferredDatasetIds] = useState<string[]>([]);
   const [namePrefix, setNamePrefix] = useState(initialDraft.namePrefix);
   const [keepOriginalHost, setKeepOriginalHost] = useState(initialDraft.keepOriginalHost);
   const [nodes, setNodes] = useState<PreviewNode[]>(initialDraft.previewNodes);
@@ -118,8 +100,8 @@ export function HomePage() {
   const expiresAt = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), []);
 
   const preferredCount = useMemo(
-    () => preferredAddressesInput.split('\n').filter((l) => l.trim()).length,
-    [preferredAddressesInput],
+    () => getNonEmptyLines(preferredAddressesInput).length + countDatasetLines(preferredAddressSetIds, preferredDatasets),
+    [preferredAddressesInput, preferredAddressSetIds, preferredDatasets],
   );
 
   useEffect(() => {
@@ -199,34 +181,20 @@ export function HomePage() {
     setShowResultModal(false);
   }
 
-  function toggleNodeDataset(id: string, checked: boolean) {
-    const nextIds = checked
-      ? [...nodeLinkSetIds, id]
-      : nodeLinkSetIds.filter((item) => item !== id);
-
-    const manualInput = removeDatasetLines(nodeLinksInput, nodeLinkSetIds, nodeDatasets);
-    const selectedContent = getSelectedDatasetContent(nextIds, nodeDatasets);
-
-    setNodeLinkSetIds(nextIds);
-    setNodeLinksInput(joinUniqueSections([manualInput, selectedContent]));
+  function clearGeneratedState() {
     setNodes([]);
     setWarnings([]);
     setPublicUrl('');
   }
 
+  function toggleNodeDataset(id: string, checked: boolean) {
+    setNodeLinkSetIds((current) => updateSelectedIds(current, id, checked));
+    clearGeneratedState();
+  }
+
   function togglePreferredDataset(id: string, checked: boolean) {
-    const nextIds = checked
-      ? [...preferredAddressSetIds, id]
-      : preferredAddressSetIds.filter((item) => item !== id);
-
-    const manualInput = removeDatasetLines(preferredAddressesInput, preferredAddressSetIds, preferredDatasets);
-    const selectedContent = getSelectedDatasetContent(nextIds, preferredDatasets);
-
-    setPreferredAddressSetIds(nextIds);
-    setPreferredAddressesInput(joinUniqueSections([manualInput, selectedContent]));
-    setNodes([]);
-    setWarnings([]);
-    setPublicUrl('');
+    setPreferredAddressSetIds((current) => updateSelectedIds(current, id, checked));
+    clearGeneratedState();
   }
 
   async function handleCopyUrl() {
@@ -238,62 +206,38 @@ export function HomePage() {
     <div className="main-grid">
       <section className="panel">
         <div className="panel-title">输入配置</div>
-        <div>
-          <label>节点链接来源</label>
-          <div className="source-list" aria-label="节点链接来源">
-            {nodeDatasets.length ? nodeDatasets.map((item) => (
-              <label key={item.id} className="checkbox source-item">
-                <input
-                  type="checkbox"
-                  checked={nodeLinkSetIds.includes(item.id)}
-                  onChange={(event) => toggleNodeDataset(item.id, event.target.checked)}
-                />
-                {item.name}
-              </label>
-            )) : (
-              <p className="text-muted">暂无可选数据集，直接在下方粘贴即可。</p>
-            )}
-          </div>
-        </div>
-        <div>
-          <label htmlFor="node-links">节点链接</label>
-          <textarea
-            id="node-links"
-            aria-label="节点链接"
-            rows={6}
-            placeholder="vmess://... vless://... trojan://...&#10;一行一个，支持 base64 订阅内容"
-            value={nodeLinksInput}
-            onChange={(event) => setNodeLinksInput(event.target.value)}
-          />
-        </div>
-        <div>
-          <label>优选地址来源</label>
-          <div className="source-list" aria-label="优选地址来源">
-            {preferredDatasets.length ? preferredDatasets.map((item) => (
-              <label key={item.id} className="checkbox source-item">
-                <input
-                  type="checkbox"
-                  checked={preferredAddressSetIds.includes(item.id)}
-                  onChange={(event) => togglePreferredDataset(item.id, event.target.checked)}
-                />
-                {item.name}
-              </label>
-            )) : (
-              <p className="text-muted">暂无可选数据集，直接在下方粘贴即可。</p>
-            )}
-          </div>
-        </div>
-        <div>
-          <label htmlFor="preferred-addresses">优选地址</label>
-          <textarea
-            id="preferred-addresses"
-            aria-label="优选地址"
-            rows={4}
-            placeholder="104.16.1.2#HK&#10;104.17.2.3:2053#US"
-            value={preferredAddressesInput}
-            onChange={(event) => setPreferredAddressesInput(event.target.value)}
-          />
-        </div>
+        <HomeDatasetSourceSection
+          sourceLabel="节点链接来源"
+          sourceAriaLabel="节点链接来源"
+          emptyText="暂无可选数据集，直接在下方粘贴即可。"
+          manualLabel="节点链接"
+          textareaId="node-links"
+          textareaValue={nodeLinksInput}
+          textareaRows={6}
+          textareaPlaceholder="vmess://... vless://... trojan://...&#10;一行一个，支持 base64 订阅内容"
+          datasets={nodeDatasets}
+          selectedIds={nodeLinkSetIds}
+          expandedIds={expandedNodeDatasetIds}
+          onToggleSelected={toggleNodeDataset}
+          onToggleExpanded={(id) => setExpandedNodeDatasetIds((current) => toggleExpandedId(current, id))}
+          onTextareaChange={setNodeLinksInput}
+        />
+        <HomeDatasetSourceSection
+          sourceLabel="优选地址来源"
+          sourceAriaLabel="优选地址来源"
+          emptyText="暂无可选数据集，直接在下方粘贴即可。"
+          manualLabel="优选地址"
+          textareaId="preferred-addresses"
+          textareaValue={preferredAddressesInput}
+          textareaRows={4}
+          textareaPlaceholder="104.16.1.2#HK&#10;104.17.2.3:2053#US"
+          datasets={preferredDatasets}
+          selectedIds={preferredAddressSetIds}
+          expandedIds={expandedPreferredDatasetIds}
+          onToggleSelected={togglePreferredDataset}
+          onToggleExpanded={(id) => setExpandedPreferredDatasetIds((current) => toggleExpandedId(current, id))}
+          onTextareaChange={setPreferredAddressesInput}
+        />
         <div className="row">
           <div>
             <label htmlFor="name-prefix">备注前缀</label>
