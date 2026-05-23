@@ -1,7 +1,30 @@
+import { existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { config } from 'dotenv';
 import { z } from 'zod';
 
-config({ path: new URL('../../../../.env', import.meta.url), quiet: true });
+function findEnvFile() {
+  let currentDir = process.cwd();
+
+  for (;;) {
+    const candidate = resolve(currentDir, '.env');
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+
+    const parentDir = dirname(currentDir);
+    if (parentDir === currentDir) {
+      return null;
+    }
+
+    currentDir = parentDir;
+  }
+}
+
+const envFile = findEnvFile();
+if (envFile) {
+  config({ path: envFile, quiet: true });
+}
 
 const TEST_ACCESS_SECRET = 'test-access-secret-12345678901234567890';
 const TEST_REFRESH_SECRET = 'test-refresh-secret-1234567890123456789';

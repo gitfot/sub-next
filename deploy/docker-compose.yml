@@ -1,31 +1,49 @@
 services:
   postgres:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: sub_next
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "sub_next"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-  api:
-    build:
-      context: ..
-      dockerfile: apps/api/Dockerfile
+  app:
+    image: ghcr.io/gitfot/sub-next:${APP_IMAGE_TAG:-latest}
+    restart: unless-stopped
     env_file:
       - ../.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sub_next
+      API_BASE_URL: http://localhost:4000
+      PUBLIC_BASE_URL: http://localhost:4000
+      WEB_ORIGIN: http://localhost:4000
     ports:
       - "4000:4000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const net=require('node:net');const socket=net.createConnection({host:'127.0.0.1',port:4000},()=>{socket.end();process.exit(0)});socket.on('error',()=>process.exit(1));",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
-  web:
-    build:
-      context: ..
-      dockerfile: apps/web/Dockerfile
-    env_file:
-      - ../.env
-    ports:
-      - "3000:3000"
-    depends_on:
-      - api
+volumes:
+  postgres-data:
