@@ -1,7 +1,5 @@
 import { type DatasetItem } from '../features/data-management/api.js';
 
-const PREVIEW_LIMIT = 4;
-
 function getNonEmptyLines(content: string) {
   return content
     .split('\n')
@@ -33,7 +31,6 @@ export function HomeDatasetSourceSection(props: HomeDatasetSourceSectionProps) {
       <div className="dataset-cards" aria-label={props.sourceAriaLabel}>
         {props.datasets.length ? props.datasets.map((item) => {
           const lines = getNonEmptyLines(item.content);
-          const previewLines = lines.slice(0, PREVIEW_LIMIT);
           const selected = props.selectedIds.includes(item.id);
           const expanded = props.expandedIds.includes(item.id);
 
@@ -65,13 +62,10 @@ export function HomeDatasetSourceSection(props: HomeDatasetSourceSectionProps) {
               {expanded ? (
                 <div className="dataset-card-body">
                   <div className="preview-lines">
-                    {previewLines.map((line, index) => (
+                    {lines.map((line, index) => (
                       <div key={`${item.id}-${index}`} className="line">{line}</div>
                     ))}
                   </div>
-                  {lines.length > PREVIEW_LIMIT ? (
-                    <div className="preview-more">还有 {lines.length - PREVIEW_LIMIT} 条...</div>
-                  ) : null}
                 </div>
               ) : null}
             </article>
@@ -83,6 +77,7 @@ export function HomeDatasetSourceSection(props: HomeDatasetSourceSectionProps) {
       <div className="manual-section">
         <label htmlFor={props.textareaId}>{props.manualLabel}</label>
         <textarea
+          className="fixed-multiline-input"
           id={props.textareaId}
           aria-label={props.manualLabel}
           rows={props.textareaRows}

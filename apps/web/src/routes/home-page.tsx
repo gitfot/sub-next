@@ -204,116 +204,124 @@ export function HomePage() {
 
   return (
     <div className="main-grid">
-      <section className="panel">
+      <section className="panel home-panel">
         <div className="panel-title">输入配置</div>
-        <HomeDatasetSourceSection
-          sourceLabel="节点链接来源"
-          sourceAriaLabel="节点链接来源"
-          emptyText="暂无可选数据集，直接在下方粘贴即可。"
-          manualLabel="节点链接"
-          textareaId="node-links"
-          textareaValue={nodeLinksInput}
-          textareaRows={6}
-          textareaPlaceholder="vmess://... vless://... trojan://...&#10;一行一个，支持 base64 订阅内容"
-          datasets={nodeDatasets}
-          selectedIds={nodeLinkSetIds}
-          expandedIds={expandedNodeDatasetIds}
-          onToggleSelected={toggleNodeDataset}
-          onToggleExpanded={(id) => setExpandedNodeDatasetIds((current) => toggleExpandedId(current, id))}
-          onTextareaChange={setNodeLinksInput}
-        />
-        <HomeDatasetSourceSection
-          sourceLabel="优选地址来源"
-          sourceAriaLabel="优选地址来源"
-          emptyText="暂无可选数据集，直接在下方粘贴即可。"
-          manualLabel="优选地址"
-          textareaId="preferred-addresses"
-          textareaValue={preferredAddressesInput}
-          textareaRows={4}
-          textareaPlaceholder="104.16.1.2#HK&#10;104.17.2.3:2053#US"
-          datasets={preferredDatasets}
-          selectedIds={preferredAddressSetIds}
-          expandedIds={expandedPreferredDatasetIds}
-          onToggleSelected={togglePreferredDataset}
-          onToggleExpanded={(id) => setExpandedPreferredDatasetIds((current) => toggleExpandedId(current, id))}
-          onTextareaChange={setPreferredAddressesInput}
-        />
-        <div className="row">
-          <div>
-            <label htmlFor="name-prefix">备注前缀</label>
-            <input id="name-prefix" type="text" placeholder="例如 CF" value={namePrefix} onChange={(event) => setNamePrefix(event.target.value)} />
-          </div>
-          <label className="checkbox" style={{ marginBottom: 6 }}>
-            <input type="checkbox" checked={keepOriginalHost} onChange={(event) => setKeepOriginalHost(event.target.checked)} />
-            保留原 Host/SNI
-          </label>
+        <div className="home-panel-scroll" data-testid="home-input-scroll">
+          <HomeDatasetSourceSection
+            sourceLabel="节点链接来源"
+            sourceAriaLabel="节点链接来源"
+            emptyText="暂无可选数据集，直接在下方粘贴即可。"
+            manualLabel="节点链接"
+            textareaId="node-links"
+            textareaValue={nodeLinksInput}
+            textareaRows={6}
+            textareaPlaceholder="vmess://... vless://... trojan://...&#10;一行一个，支持 base64 订阅内容"
+            datasets={nodeDatasets}
+            selectedIds={nodeLinkSetIds}
+            expandedIds={expandedNodeDatasetIds}
+            onToggleSelected={toggleNodeDataset}
+            onToggleExpanded={(id) => setExpandedNodeDatasetIds((current) => toggleExpandedId(current, id))}
+            onTextareaChange={setNodeLinksInput}
+          />
+          <HomeDatasetSourceSection
+            sourceLabel="优选地址来源"
+            sourceAriaLabel="优选地址来源"
+            emptyText="暂无可选数据集，直接在下方粘贴即可。"
+            manualLabel="优选地址"
+            textareaId="preferred-addresses"
+            textareaValue={preferredAddressesInput}
+            textareaRows={4}
+            textareaPlaceholder="104.16.1.2#HK&#10;104.17.2.3:2053#US"
+            datasets={preferredDatasets}
+            selectedIds={preferredAddressSetIds}
+            expandedIds={expandedPreferredDatasetIds}
+            onToggleSelected={togglePreferredDataset}
+            onToggleExpanded={(id) => setExpandedPreferredDatasetIds((current) => toggleExpandedId(current, id))}
+            onTextareaChange={setPreferredAddressesInput}
+          />
         </div>
-        <div className="actions-row">
-          <button type="button" className="btn btn-primary" onClick={handlePreview}>
-            生成节点
-          </button>
+        <div className="home-panel-footer" data-testid="home-input-footer">
+          <div className="row home-footer-row">
+            <div>
+              <label htmlFor="name-prefix">备注前缀</label>
+              <input id="name-prefix" type="text" placeholder="例如 CF" value={namePrefix} onChange={(event) => setNamePrefix(event.target.value)} />
+            </div>
+            <label className="checkbox home-footer-checkbox">
+              <input type="checkbox" checked={keepOriginalHost} onChange={(event) => setKeepOriginalHost(event.target.checked)} />
+              保留原 Host/SNI
+            </label>
+          </div>
+          <div className="actions-row">
+            <button type="button" className="btn btn-primary" onClick={handlePreview}>
+              生成节点
+            </button>
+          </div>
         </div>
       </section>
 
-      <section className="panel">
+      <section className="panel home-panel">
         <div className="panel-title">生成结果</div>
-        {requiresRegenerate ? (
-          <p className="text-muted">已从历史订阅恢复输入，请重新生成节点后再发布。</p>
-        ) : null}
-        {warnings.length ? (
-          <div className="warning-list">
-            {warnings.map((warning) => (
-              <p key={warning}>{warning}</p>
+        <div className="home-panel-scroll" data-testid="home-result-scroll">
+          {requiresRegenerate ? (
+            <p className="text-muted">已从历史订阅恢复输入，请重新生成节点后再发布。</p>
+          ) : null}
+          {warnings.length ? (
+            <div className="warning-list">
+              {warnings.map((warning) => (
+                <p key={warning}>{warning}</p>
+              ))}
+            </div>
+          ) : null}
+          <div className="stats">
+            <div className="stat"><div className="num">{nodes.length}</div><div className="lbl">生成节点</div></div>
+            <div className="stat"><div className="num">{preferredCount}</div><div className="lbl">优选地址</div></div>
+            <div className="stat"><div className="num">{nodes.length}</div><div className="lbl">输出总数</div></div>
+          </div>
+          <div className="node-list">
+            {nodes.map((node) => (
+              <article key={node.name} className="node-item">
+                <div>
+                  <span className="name">{node.name}</span>
+                  {node.type ? <span className={`tag ${getTagClass(node.type)}`}>{node.type}</span> : null}
+                  <span className="meta">
+                    {node.server}:{node.port}
+                    {node.hostHeader ? ` · Host: ${node.hostHeader}` : ''}
+                    {node.sni ? ` · SNI: ${node.sni}` : ''}
+                  </span>
+                </div>
+                <button type="button" className="del" onClick={() => setNodes(nodes.filter((item) => item.name !== node.name))}>
+                  删除
+                </button>
+              </article>
             ))}
           </div>
-        ) : null}
-        <div className="stats">
-          <div className="stat"><div className="num">{nodes.length}</div><div className="lbl">生成节点</div></div>
-          <div className="stat"><div className="num">{preferredCount}</div><div className="lbl">优选地址</div></div>
-          <div className="stat"><div className="num">{nodes.length}</div><div className="lbl">输出总数</div></div>
         </div>
-        <div className="node-list">
-          {nodes.map((node) => (
-            <article key={node.name} className="node-item">
-              <div>
-                <span className="name">{node.name}</span>
-                {node.type ? <span className={`tag ${getTagClass(node.type)}`}>{node.type}</span> : null}
-                <span className="meta">
-                  {node.server}:{node.port}
-                  {node.hostHeader ? ` · Host: ${node.hostHeader}` : ''}
-                  {node.sni ? ` · SNI: ${node.sni}` : ''}
-                </span>
-              </div>
-              <button type="button" className="del" onClick={() => setNodes(nodes.filter((item) => item.name !== node.name))}>
-                删除
-              </button>
-            </article>
-          ))}
-        </div>
-        <div className="expire-row">
-          <div>
-            <label htmlFor="subscription-type">订阅类型</label>
-            <select
-              id="subscription-type"
-              aria-label="订阅类型"
-              value={subscriptionType}
-              onChange={(event) => setSubscriptionType(event.target.value as typeof subscriptionType)}
-            >
-              <option value="clash">Clash</option>
-              <option value="v2rayn">V2rayN</option>
-              <option value="shadowrocket">Shadowrocket</option>
-              <option value="surge">Surge</option>
-            </select>
+        <div className="home-panel-footer" data-testid="home-result-footer">
+          <div className="expire-row">
+            <div>
+              <label htmlFor="subscription-type">订阅类型</label>
+              <select
+                id="subscription-type"
+                aria-label="订阅类型"
+                value={subscriptionType}
+                onChange={(event) => setSubscriptionType(event.target.value as typeof subscriptionType)}
+              >
+                <option value="clash">Clash</option>
+                <option value="v2rayn">V2rayN</option>
+                <option value="shadowrocket">Shadowrocket</option>
+                <option value="surge">Surge</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="remark">备注</label>
+              <input id="remark" type="text" aria-label="备注" placeholder="给这个订阅起个名字" value={remark} onChange={(event) => setRemark(event.target.value)} />
+            </div>
           </div>
-          <div>
-            <label htmlFor="remark">备注</label>
-            <input id="remark" type="text" aria-label="备注" placeholder="给这个订阅起个名字" value={remark} onChange={(event) => setRemark(event.target.value)} />
+          <div className="actions-row">
+            <button type="button" className="btn btn-primary" onClick={handlePublish} disabled={requiresRegenerate || nodes.length === 0}>
+              生成订阅
+            </button>
           </div>
-        </div>
-        <div className="actions-row">
-          <button type="button" className="btn btn-primary" onClick={handlePublish} disabled={requiresRegenerate || nodes.length === 0}>
-            生成订阅
-          </button>
         </div>
       </section>
 

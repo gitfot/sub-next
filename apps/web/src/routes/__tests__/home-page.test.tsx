@@ -159,6 +159,42 @@ describe('home page', () => {
     expect(checkbox).not.toBeChecked();
   });
 
+  it('shows all expanded dataset lines and keeps dedicated action areas outside the scroll content', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        items: [{
+          id: 'node-1',
+          name: '机场A',
+          content: 'line-1\nline-2\nline-3\nline-4\nline-5\nline-6',
+        }],
+      })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        items: [{ id: 'pref-1', name: 'Cloudflare', content: '104.16.1.2#HK' }],
+      })));
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
+
+    await user.click(await screen.findByRole('button', { name: '展开 机场A 预览' }));
+
+    expect(await screen.findByText('line-1')).toBeInTheDocument();
+    expect(screen.getByText('line-2')).toBeInTheDocument();
+    expect(screen.getByText('line-3')).toBeInTheDocument();
+    expect(screen.getByText('line-4')).toBeInTheDocument();
+    expect(screen.getByText('line-5')).toBeInTheDocument();
+    expect(screen.getByText('line-6')).toBeInTheDocument();
+    expect(screen.queryByText('还有 2 条...')).not.toBeInTheDocument();
+
+    expect(screen.getByTestId('home-input-footer')).toBeInTheDocument();
+    expect(screen.getByTestId('home-result-footer')).toBeInTheDocument();
+    expect(screen.getByTestId('home-input-scroll')).toBeInTheDocument();
+    expect(screen.getByTestId('home-result-scroll')).toBeInTheDocument();
+  });
+
   it('restores draft input after leaving and returning to the homepage', async () => {
     const user = userEvent.setup();
     vi.spyOn(global, 'fetch')
