@@ -111,10 +111,6 @@ pnpm dev:web
 
 ![订阅详情](./docs/screenshots/subscription-detail.png)
 
-### 订阅公开链接
-
-![公开链接](./docs/screenshots/public-url.png)
-
 ## 工作流程
 
 1. **注册账号** — 使用配置的 `ADMIN_PASSWORD` 注册
