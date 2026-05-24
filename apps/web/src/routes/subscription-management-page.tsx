@@ -148,7 +148,7 @@ export function SubscriptionManagementPage() {
 
       {detail ? (
         <div className="modal-overlay" role="presentation" onClick={() => setDetail(null)}>
-          <div className="modal" style={{ maxWidth: 640 }} role="dialog" aria-modal="true" aria-labelledby="subscription-detail-title" onClick={(event) => event.stopPropagation()}>
+          <div className="modal" style={{ maxWidth: 760 }} role="dialog" aria-modal="true" aria-labelledby="subscription-detail-title" onClick={(event) => event.stopPropagation()}>
             <div className="modal-header">
               <h3 id="subscription-detail-title">订阅详情</h3>
               <button type="button" className="modal-close" onClick={() => setDetail(null)}>&times;</button>
@@ -183,14 +183,22 @@ export function SubscriptionManagementPage() {
                   </div>
                 </div>
               ) : null}
-              <label className="panel-subtitle" htmlFor="subscription-detail-node-sources">节点链接来源</label>
-              <textarea id="subscription-detail-node-sources" rows={2} value={selectedNodeSourceNames.join('\n') || '-'} readOnly />
-              <label className="panel-subtitle" htmlFor="subscription-detail-preferred-sources">优选地址来源</label>
-              <textarea id="subscription-detail-preferred-sources" rows={2} value={selectedPreferredSourceNames.join('\n') || '-'} readOnly />
-              <label className="panel-subtitle" htmlFor="subscription-detail-node-links-input">原始节点链接输入</label>
-              <textarea id="subscription-detail-node-links-input" rows={3} value={detail.snapshot.nodeLinksInput || '-'} readOnly />
-              <label className="panel-subtitle" htmlFor="subscription-detail-preferred-addresses-input">原始优选地址输入</label>
-              <textarea id="subscription-detail-preferred-addresses-input" rows={3} value={detail.snapshot.preferredAddressesInput || '-'} readOnly />
+              <div className="detail-field">
+                <label className="panel-subtitle" htmlFor="subscription-detail-node-sources">节点链接来源</label>
+                <textarea className="detail-readonly-textarea" id="subscription-detail-node-sources" rows={3} value={selectedNodeSourceNames.join('\n') || '-'} readOnly />
+              </div>
+              <div className="detail-field">
+                <label className="panel-subtitle" htmlFor="subscription-detail-preferred-sources">优选地址来源</label>
+                <textarea className="detail-readonly-textarea" id="subscription-detail-preferred-sources" rows={3} value={selectedPreferredSourceNames.join('\n') || '-'} readOnly />
+              </div>
+              <div className="detail-field">
+                <label className="panel-subtitle" htmlFor="subscription-detail-node-links-input">原始节点链接输入</label>
+                <textarea className="detail-readonly-textarea" id="subscription-detail-node-links-input" rows={5} value={detail.snapshot.nodeLinksInput || '-'} readOnly />
+              </div>
+              <div className="detail-field">
+                <label className="panel-subtitle" htmlFor="subscription-detail-preferred-addresses-input">原始优选地址输入</label>
+                <textarea className="detail-readonly-textarea" id="subscription-detail-preferred-addresses-input" rows={5} value={detail.snapshot.preferredAddressesInput || '-'} readOnly />
+              </div>
               <div className="panel-subtitle">生成器选项</div>
               <div className="col-2">
                 <div>

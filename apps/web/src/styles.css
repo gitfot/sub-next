@@ -280,6 +280,17 @@ textarea, input[type="text"], input[type="password"], input[type="email"] {
   background: var(--card);
 }
 textarea { font-family: var(--font-mono); resize: none; }
+textarea.detail-readonly-textarea {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.5;
+}
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
 textarea:focus, input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-light);
@@ -567,6 +578,7 @@ select:focus { border-color: var(--accent); }
 }
 .result-box input {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   font-size: 12px;
