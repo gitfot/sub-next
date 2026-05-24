@@ -38,7 +38,7 @@ sub-next/
 ├── packages/
 │   └── sub-core/            # 核心解析/展开/渲染逻辑
 ├── prisma/                  # 数据库 Schema
-├── deploy/                  # Docker Compose 部署配置
+├── docker-compose.yml       # Docker Compose 部署配置
 └── docs/                    # 文档
 ```
 
@@ -76,7 +76,7 @@ cp .env.example .env
 
 ```bash
 # 启动 PostgreSQL（如本地没有）
-docker compose -f deploy/docker-compose.yml up postgres
+docker compose up postgres
 
 # 启动 API（默认 :4000，首次启动自动执行 prisma db push）
 pnpm dev:api
@@ -147,7 +147,7 @@ pnpm db:migrate       # 数据库迁移
 
 ```bash
 git clone https://github.com/gitfot/sub-next.git
-cd sub-next/deploy
+cd sub-next
 cp .env.example .env
 docker compose up -d
 ```
