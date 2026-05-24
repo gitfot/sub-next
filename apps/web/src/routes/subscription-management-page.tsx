@@ -170,7 +170,7 @@ export function SubscriptionManagementPage() {
                   <input id="subscription-detail-created-at" type="text" value={formatDateTime(detail.subscription.createdAt)} readOnly />
                 </div>
                 <div>
-                  <label htmlFor="subscription-detail-expires-at">有效期至</label>
+                  <label htmlFor="subscription-detail-expires-at">过期时间</label>
                   <input id="subscription-detail-expires-at" type="text" value={formatDateTime(detail.subscription.expiresAt)} readOnly />
                 </div>
               </div>

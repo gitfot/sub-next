@@ -12,6 +12,7 @@ export interface HomeDraft {
   preferredAddressSetIds: string[];
   nodeLinksInput: string;
   preferredAddressesInput: string;
+  expiryMinutes: number;
   nodeLinkManualInputs: string[];
   preferredAddressManualInputs: string[];
   nodeDatasetDraftEdits: Record<string, string>;
@@ -45,6 +46,7 @@ interface LegacyDraftShape {
   preferredAddressSetIds?: string[];
   nodeLinkManualInputs?: string[];
   preferredAddressManualInputs?: string[];
+  expiryMinutes?: number;
 }
 
 function normalizeSelectedIds(value?: string[] | string) {
@@ -72,6 +74,21 @@ function normalizeManualInputs(inputs?: string[], fallbackValue?: string) {
     .filter(Boolean);
 }
 
+export function normalizeExpiryMinutes(value?: number | string) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.max(1, Math.floor(value));
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return Math.max(1, Math.floor(parsed));
+    }
+  }
+
+  return 5;
+}
+
 const STORAGE_KEY = 'sub-next-home-draft';
 
 export function getEmptyHomeDraft(): HomeDraft {
@@ -88,6 +105,7 @@ export function getEmptyHomeDraft(): HomeDraft {
     expandedPreferredDatasetIds: [],
     namePrefix: '',
     keepOriginalHost: true,
+    expiryMinutes: 5,
     previewNodes: [],
     warnings: [],
     subscriptionType: 'clash',
@@ -108,6 +126,7 @@ export function loadHomeDraft(): HomeDraft {
       ...parsed,
       nodeLinkSetIds: normalizeSelectedIds(parsed.nodeLinkSetIds ?? parsed.nodeLinkSetId),
       preferredAddressSetIds: normalizeSelectedIds(parsed.preferredAddressSetIds ?? parsed.preferredAddressSetId),
+      expiryMinutes: normalizeExpiryMinutes(parsed.expiryMinutes),
       nodeLinkManualInputs: normalizeManualInputs(parsed.nodeLinkManualInputs, parsed.nodeLinksInput),
       preferredAddressManualInputs: normalizeManualInputs(parsed.preferredAddressManualInputs, parsed.preferredAddressesInput),
       expandedNodeDatasetIds: normalizeSelectedIds(parsed.expandedNodeDatasetIds),

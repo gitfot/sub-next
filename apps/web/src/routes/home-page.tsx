@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   loadHomeDraft,
+  normalizeExpiryMinutes,
   saveHomeDraft,
   type HomeDraft,
   type HomeDraftPreviewNode,
@@ -86,6 +87,10 @@ function getTagClass(type: string) {
   return '';
 }
 
+function buildExpiresAt(minutes: number) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString();
+}
+
 export function HomePage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -120,10 +125,11 @@ export function HomePage() {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [subscriptionType, setSubscriptionType] = useState<'clash' | 'v2rayn' | 'shadowrocket' | 'surge'>(initialDraft.subscriptionType);
   const [remark, setRemark] = useState(initialDraft.remark);
+  const [expiryMinutes, setExpiryMinutes] = useState(String(initialDraft.expiryMinutes));
   const [publicUrl, setPublicUrl] = useState('');
   const [showResultModal, setShowResultModal] = useState(false);
   const [requiresRegenerate, setRequiresRegenerate] = useState(initialDraft.requiresRegenerate);
-  const expiresAt = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), []);
+  const normalizedExpiryMinutes = normalizeExpiryMinutes(expiryMinutes);
   const nodeLinksInput = useMemo(
     () => buildCombinedInput(nodeLinkSetIds, nodeDatasets, nodeDatasetDraftEdits, nodeLinkManualInputs),
     [nodeLinkSetIds, nodeDatasets, nodeDatasetDraftEdits, nodeLinkManualInputs],
@@ -165,6 +171,7 @@ export function HomePage() {
       expandedPreferredDatasetIds,
       namePrefix,
       keepOriginalHost,
+      expiryMinutes: normalizedExpiryMinutes,
       previewNodes: nodes,
       warnings,
       subscriptionType,
@@ -184,6 +191,7 @@ export function HomePage() {
     expandedPreferredDatasetIds,
     namePrefix,
     keepOriginalHost,
+    expiryMinutes,
     nodes,
     warnings,
     subscriptionType,
@@ -214,7 +222,7 @@ export function HomePage() {
       preferredAddressesInput,
       keepOriginalHost,
       previewNodes: nodes as unknown as Array<Record<string, unknown>>,
-      expiresAt,
+      expiresAt: buildExpiresAt(normalizedExpiryMinutes),
       subscriptionType,
       ...(normalizedRemark ? { remark: normalizedRemark } : {}),
       ...(namePrefix ? { namePrefix } : {}),
@@ -378,7 +386,7 @@ export function HomePage() {
                   删除
                 </button>
               </article>
-            ))}
+              ))}
           </div>
           <div className="expire-row">
             <div>
@@ -394,6 +402,22 @@ export function HomePage() {
                 <option value="shadowrocket">Shadowrocket</option>
                 <option value="surge">Surge</option>
               </select>
+            </div>
+            <div className="expiry-field">
+              <label htmlFor="expiry-minutes">失效时间</label>
+              <div className="expiry-control-inline">
+                <input
+                  id="expiry-minutes"
+                  className="expiry-input"
+                  type="number"
+                  min={1}
+                  step={1}
+                  aria-label="失效时间"
+                  value={expiryMinutes}
+                  onChange={(event) => setExpiryMinutes(event.target.value)}
+                />
+                <span className="expiry-unit">分钟</span>
+              </div>
             </div>
             <div>
               <label htmlFor="remark">备注</label>

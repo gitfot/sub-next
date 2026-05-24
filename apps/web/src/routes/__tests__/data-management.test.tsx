@@ -268,6 +268,8 @@ describe('subscription management', () => {
     const dialog = await screen.findByRole('dialog', { name: '订阅详情' });
     expect(dialog).toBeInTheDocument();
     expect(within(dialog).getByLabelText('备注')).toHaveValue('测试订阅');
+    expect(within(dialog).getByLabelText('过期时间')).toHaveDisplayValue(/2030/);
+    expect(within(dialog).queryByLabelText('有效期至')).not.toBeInTheDocument();
     expect(within(dialog).getByLabelText('原始节点链接输入')).toHaveValue('vmess://demo\ntrojan://demo-2');
     expect(within(dialog).getByLabelText('原始优选地址输入')).toHaveValue('104.16.1.2#HK\n104.17.2.3:2053#US');
     expect(within(dialog).getByLabelText('节点链接来源')).toHaveValue('机场A\n机场B');

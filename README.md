@@ -105,10 +105,6 @@ pnpm dev:web
 
 ![订阅管理](./docs/screenshots/subscriptions.png)
 
-### 订阅详情
-
-![订阅详情](./docs/screenshots/subscription-detail.png)
-
 ## 工作流程
 
 1. **注册账号** — 使用配置的 `ADMIN_PASSWORD` 注册

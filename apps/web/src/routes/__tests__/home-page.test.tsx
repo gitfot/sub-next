@@ -17,6 +17,100 @@ describe('home page', () => {
     await user.type(await screen.findByLabelText(`${kind} 1`), value);
   }
 
+  it('defaults subscription expiry to five minutes and publishes the computed expiresAt', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-05-24T10:00:00.000Z'));
+    const fetchSpy = vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        items: [{ id: 'node-1', name: '机场A', content: 'vmess://saved-node' }],
+      })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        items: [{ id: 'pref-1', name: 'Cloudflare', content: '104.16.1.2#HK' }],
+      })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        warnings: [],
+        nodes: [
+          { name: 'node-1', type: 'vmess', server: '104.16.1.2', port: 443, hostHeader: 'edge.example.com', sni: 'edge.example.com' },
+        ],
+      })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        publicUrl: 'http://localhost:4000/subscriptions/public/demo-token',
+      })));
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
+
+    await addManualInput(user, '节点链接', 'vmess://demo');
+    await addManualInput(user, '优选地址', '104.16.1.2#HK');
+    await user.click(screen.getByRole('button', { name: '生成节点' }));
+
+    expect(await screen.findByLabelText('失效时间')).toHaveValue(5);
+    expect(screen.getByText('分钟')).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('订阅类型'), 'clash');
+    await user.type(screen.getByLabelText('备注'), '测试订阅');
+    await user.click(screen.getByRole('button', { name: '生成订阅' }));
+
+    const publishCall = fetchSpy.mock.calls.find((call) => call[0] === '/api/subscriptions');
+    expect(publishCall?.[0]).toBe('/api/subscriptions');
+    expect(JSON.parse(String((publishCall?.[1] as RequestInit)?.body))).toMatchObject({
+      expiresAt: '2026-05-24T10:05:00.000Z',
+    });
+  });
+
+  it('updates subscription expiry minutes when typing a new value', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })));
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
+
+    const expiry = await screen.findByLabelText('失效时间');
+
+    expect(expiry).toHaveValue(5);
+
+    await user.clear(expiry);
+    await user.type(expiry, '12');
+    expect(expiry).toHaveValue(12);
+  });
+
+  it('restores subscription expiry minutes from the home draft', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ items: [] })));
+
+    const firstRender = render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
+
+    const expiry = await screen.findByLabelText('失效时间');
+    await user.clear(expiry);
+    await user.type(expiry, '12');
+
+    firstRender.unmount();
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByLabelText('失效时间')).toHaveValue(12);
+  });
+
   it('previews nodes and publishes one subscription link', async () => {
     const user = userEvent.setup();
     vi.spyOn(global, 'fetch')
