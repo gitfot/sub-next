@@ -10,10 +10,10 @@
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
-    "postinstall": "prisma generate",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push"
+    "postinstall": "node ./scripts/run-prisma.mjs generate",
+    "db:generate": "node ./scripts/run-prisma.mjs generate",
+    "db:migrate": "node ./scripts/run-prisma.mjs migrate dev",
+    "db:push": "node ./scripts/run-prisma.mjs db push"
   },
   "devDependencies": {
     "@prisma/client": "^6.19.3",

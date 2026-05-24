@@ -6,6 +6,7 @@ const rootDir = path.resolve(import.meta.dirname, '..', '..', '..');
 const schemaPath = path.join(rootDir, 'prisma', 'schema.prisma');
 const rootPackageJsonPath = path.join(rootDir, 'package.json');
 const apiPackageJsonPath = path.join(rootDir, 'apps', 'api', 'package.json');
+const envExamplePath = path.join(rootDir, '.env.example');
 
 function readPackageJson(filePath: string) {
   return JSON.parse(readFileSync(filePath, 'utf8')) as {
@@ -31,6 +32,20 @@ describe('Prisma workspace setup', () => {
   it('runs prisma generate from the root postinstall hook', () => {
     const rootPackageJson = readPackageJson(rootPackageJsonPath);
 
-    expect(rootPackageJson.scripts?.postinstall).toBe('prisma generate');
+    expect(rootPackageJson.scripts?.postinstall).toBe('node ./scripts/run-prisma.mjs generate');
+    expect(rootPackageJson.scripts?.['db:generate']).toBe('node ./scripts/run-prisma.mjs generate');
+    expect(rootPackageJson.scripts?.['db:push']).toBe('node ./scripts/run-prisma.mjs db push');
+    expect(rootPackageJson.scripts?.['db:migrate']).toBe('node ./scripts/run-prisma.mjs migrate dev');
+  });
+
+  it('documents split database settings in the example env file', () => {
+    const envExample = readFileSync(envExamplePath, 'utf8');
+
+    expect(envExample).toContain('DATABASE_HOST=postgres');
+    expect(envExample).toContain('DATABASE_PORT=5432');
+    expect(envExample).toContain('DATABASE_NAME=sub_next');
+    expect(envExample).toContain('DATABASE_USER=postgres');
+    expect(envExample).toContain('DATABASE_PASSWORD=postgres');
+    expect(envExample).not.toContain('DATABASE_URL=');
   });
 });

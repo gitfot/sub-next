@@ -66,11 +66,17 @@ cp .env.example .env
 
 | 变量 | 说明 |
 |---|---|
-| `DATABASE_URL` | PostgreSQL 连接字符串 |
+| `DATABASE_HOST` | PostgreSQL 主机名，Docker Compose 部署默认使用 `postgres` |
+| `DATABASE_PORT` | PostgreSQL 端口 |
+| `DATABASE_NAME` | PostgreSQL 数据库名 |
+| `DATABASE_USER` | PostgreSQL 用户名 |
+| `DATABASE_PASSWORD` | PostgreSQL 密码 |
 | `JWT_ACCESS_SECRET` | JWT 访问令牌签名密钥 |
 | `JWT_REFRESH_SECRET` | JWT 刷新令牌签名密钥 |
 | `ADMIN_PASSWORD` | 注册时使用的管理员密码 |
 | `PUBLIC_BASE_URL` | 公开访问地址，用于生成公开订阅链接 |
+
+如果是在宿主机直接运行 `pnpm dev:api`，而数据库只通过 `docker compose up postgres` 启动，请把 `DATABASE_HOST` 从 `postgres` 改成 `localhost`。如果是整套 `docker compose up -d` 部署，则保持 `postgres` 即可。
 
 ### 启动开发环境
 

@@ -5,6 +5,11 @@ import { z } from 'zod';
 
 const DEFAULT_PUBLIC_BASE_URL = 'http://localhost:4000';
 const DEFAULT_API_BASE_URL = 'http://localhost:4000';
+const DEFAULT_DATABASE_HOST = 'localhost';
+const DEFAULT_DATABASE_PORT = 5432;
+const DEFAULT_DATABASE_NAME = 'sub_next';
+const DEFAULT_DATABASE_USER = 'postgres';
+const DEFAULT_DATABASE_PASSWORD = 'postgres';
 
 function findEnvFile() {
   let currentDir = process.cwd();
@@ -31,15 +36,38 @@ if (envFile) {
 
 const TEST_ACCESS_SECRET = 'test-access-secret-12345678901234567890';
 const TEST_REFRESH_SECRET = 'test-refresh-secret-1234567890123456789';
+const optionalString = z.preprocess((value) => {
+  if (typeof value === 'string' && value.trim() === '') {
+    return undefined;
+  }
+  return value;
+}, z.string().optional());
+const optionalDatabaseUrl = z.preprocess((value) => {
+  if (typeof value === 'string' && value.trim() === '') {
+    return undefined;
+  }
+  return value;
+}, z.string().min(1).optional());
 const optionalUrl = z.preprocess((value) => {
   if (typeof value === 'string' && value.trim() === '') {
     return undefined;
   }
   return value;
 }, z.string().url().optional());
+const optionalPositiveInt = z.preprocess((value) => {
+  if (typeof value === 'string' && value.trim() === '') {
+    return undefined;
+  }
+  return value;
+}, z.coerce.number().int().positive().optional());
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().min(1).default('postgresql://postgres:postgres@localhost:5432/sub_next'),
+  DATABASE_HOST: optionalString,
+  DATABASE_PORT: optionalPositiveInt,
+  DATABASE_NAME: optionalString,
+  DATABASE_USER: optionalString,
+  DATABASE_PASSWORD: optionalString,
+  DATABASE_URL: optionalDatabaseUrl,
   JWT_ACCESS_SECRET: z.string().min(32).default(TEST_ACCESS_SECRET),
   JWT_REFRESH_SECRET: z.string().min(32).default(TEST_REFRESH_SECRET),
   ADMIN_PASSWORD: z.string().min(8).default('admin123'),
@@ -49,9 +77,81 @@ const envSchema = z.object({
   RATE_LIMIT_TIME_WINDOW: z.string().min(1).default('1 minute'),
 });
 
-let cachedEnv: z.infer<typeof envSchema> | undefined;
+type RawEnv = z.infer<typeof envSchema>;
 
-export function getEnv() {
+export interface AppEnv extends Omit<RawEnv, 'DATABASE_URL' | 'DATABASE_HOST' | 'DATABASE_PORT' | 'DATABASE_NAME' | 'DATABASE_USER' | 'DATABASE_PASSWORD'> {
+  DATABASE_HOST: string;
+  DATABASE_PORT: number;
+  DATABASE_NAME: string;
+  DATABASE_USER: string;
+  DATABASE_PASSWORD: string;
+  DATABASE_URL: string;
+}
+
+let cachedEnv: AppEnv | undefined;
+
+function hasProvidedValue(value: string | number | undefined) {
+  return value !== undefined;
+}
+
+function buildDatabaseUrl({
+  host,
+  port,
+  name,
+  user,
+  password,
+}: {
+  host: string;
+  port: number;
+  name: string;
+  user: string;
+  password: string;
+}) {
+  const databaseUrl = new URL('postgresql://localhost');
+  databaseUrl.hostname = host;
+  databaseUrl.port = String(port);
+  databaseUrl.pathname = `/${name}`;
+  databaseUrl.username = user;
+  databaseUrl.password = password;
+  return databaseUrl.toString();
+}
+
+function resolveDatabaseEnv(rawEnv: RawEnv): Pick<
+  AppEnv,
+  'DATABASE_HOST' | 'DATABASE_PORT' | 'DATABASE_NAME' | 'DATABASE_USER' | 'DATABASE_PASSWORD' | 'DATABASE_URL'
+> {
+  const hasAnySplitDatabaseSetting = [
+    rawEnv.DATABASE_HOST,
+    rawEnv.DATABASE_PORT,
+    rawEnv.DATABASE_NAME,
+    rawEnv.DATABASE_USER,
+    rawEnv.DATABASE_PASSWORD,
+  ].some((value) => hasProvidedValue(value));
+
+  const databaseEnv = {
+    DATABASE_HOST: rawEnv.DATABASE_HOST ?? DEFAULT_DATABASE_HOST,
+    DATABASE_PORT: rawEnv.DATABASE_PORT ?? DEFAULT_DATABASE_PORT,
+    DATABASE_NAME: rawEnv.DATABASE_NAME ?? DEFAULT_DATABASE_NAME,
+    DATABASE_USER: rawEnv.DATABASE_USER ?? DEFAULT_DATABASE_USER,
+    DATABASE_PASSWORD: rawEnv.DATABASE_PASSWORD ?? DEFAULT_DATABASE_PASSWORD,
+  };
+
+  return {
+    ...databaseEnv,
+    DATABASE_URL:
+      hasAnySplitDatabaseSetting || !rawEnv.DATABASE_URL
+        ? buildDatabaseUrl({
+            host: databaseEnv.DATABASE_HOST,
+            port: databaseEnv.DATABASE_PORT,
+            name: databaseEnv.DATABASE_NAME,
+            user: databaseEnv.DATABASE_USER,
+            password: databaseEnv.DATABASE_PASSWORD,
+          })
+        : rawEnv.DATABASE_URL,
+  };
+}
+
+export function getEnv(): AppEnv {
   if (!cachedEnv) {
     const rawEnv = { ...process.env };
 
@@ -64,7 +164,11 @@ export function getEnv() {
       }
     }
 
-    cachedEnv = envSchema.parse(rawEnv);
+    const parsedEnv = envSchema.parse(rawEnv);
+    cachedEnv = {
+      ...parsedEnv,
+      ...resolveDatabaseEnv(parsedEnv),
+    };
   }
   return cachedEnv;
 }
