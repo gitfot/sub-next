@@ -40,4 +40,4 @@ COPY --from=build /app/apps/web/dist ./apps/web/dist
 
 EXPOSE 4000
 
-CMD ["node", "apps/api/dist/src/server.js"]
+CMD ["node", "apps/api/dist/apps/api/src/server.js"]

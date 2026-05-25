@@ -48,6 +48,12 @@ describe('Prisma workspace setup', () => {
     );
   });
 
+  it('starts the compiled api entrypoint that tsc actually emits', () => {
+    const dockerfile = readFileSync(apiDockerfilePath, 'utf8');
+
+    expect(dockerfile).toContain('CMD ["node", "apps/api/dist/apps/api/src/server.js"]');
+  });
+
   it('documents split database settings in the example env file', () => {
     const envExample = readFileSync(envExamplePath, 'utf8');
 
