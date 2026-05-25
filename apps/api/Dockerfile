@@ -35,6 +35,7 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/packages/sub-core/package.json ./packages/sub-core/package.json
 COPY --from=build /app/packages/sub-core/dist ./packages/sub-core/dist
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
+COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/apps/web/dist ./apps/web/dist
 

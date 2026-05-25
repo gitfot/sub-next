@@ -54,6 +54,14 @@ describe('Prisma workspace setup', () => {
     expect(dockerfile).toContain('CMD ["node", "apps/api/dist/apps/api/src/server.js"]');
   });
 
+  it('copies the api workspace node_modules into the runtime image', () => {
+    const dockerfile = readFileSync(apiDockerfilePath, 'utf8');
+
+    expect(dockerfile).toContain(
+      'COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules',
+    );
+  });
+
   it('documents split database settings in the example env file', () => {
     const envExample = readFileSync(envExamplePath, 'utf8');
 
