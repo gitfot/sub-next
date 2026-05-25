@@ -6,6 +6,7 @@ const rootDir = path.resolve(import.meta.dirname, '..', '..', '..');
 const schemaPath = path.join(rootDir, 'prisma', 'schema.prisma');
 const rootPackageJsonPath = path.join(rootDir, 'package.json');
 const apiPackageJsonPath = path.join(rootDir, 'apps', 'api', 'package.json');
+const apiDockerfilePath = path.join(rootDir, 'apps', 'api', 'Dockerfile');
 const envExamplePath = path.join(rootDir, '.env.example');
 
 function readPackageJson(filePath: string) {
@@ -36,6 +37,15 @@ describe('Prisma workspace setup', () => {
     expect(rootPackageJson.scripts?.['db:generate']).toBe('node ./scripts/run-prisma.mjs generate');
     expect(rootPackageJson.scripts?.['db:push']).toBe('node ./scripts/run-prisma.mjs db push');
     expect(rootPackageJson.scripts?.['db:migrate']).toBe('node ./scripts/run-prisma.mjs migrate dev');
+  });
+
+  it('copies prisma helper scripts into the Docker deps stage before install runs', () => {
+    const dockerfile = readFileSync(apiDockerfilePath, 'utf8');
+
+    expect(dockerfile).toContain('COPY scripts scripts');
+    expect(dockerfile.indexOf('COPY scripts scripts')).toBeLessThan(
+      dockerfile.indexOf('RUN pnpm install --frozen-lockfile'),
+    );
   });
 
   it('documents split database settings in the example env file', () => {
