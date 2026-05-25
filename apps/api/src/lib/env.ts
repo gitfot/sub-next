@@ -169,6 +169,13 @@ export function getEnv(): AppEnv {
       ...parsedEnv,
       ...resolveDatabaseEnv(parsedEnv),
     };
+
+    process.env.DATABASE_HOST = cachedEnv.DATABASE_HOST;
+    process.env.DATABASE_PORT = String(cachedEnv.DATABASE_PORT);
+    process.env.DATABASE_NAME = cachedEnv.DATABASE_NAME;
+    process.env.DATABASE_USER = cachedEnv.DATABASE_USER;
+    process.env.DATABASE_PASSWORD = cachedEnv.DATABASE_PASSWORD;
+    process.env.DATABASE_URL = cachedEnv.DATABASE_URL;
   }
   return cachedEnv;
 }

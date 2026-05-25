@@ -24,7 +24,26 @@ describe('env helpers', () => {
     expect(getEnv().DATABASE_URL).toBe('postgresql://postgres:postgres@postgres:5432/sub_next');
   });
 
+  it('hydrates process.env.DATABASE_URL after deriving it from split database settings', async () => {
+    process.env.DATABASE_HOST = 'localhost';
+    process.env.DATABASE_PORT = '5432';
+    process.env.DATABASE_NAME = 'sub_next';
+    process.env.DATABASE_USER = 'postgres';
+    process.env.DATABASE_PASSWORD = 'postgres';
+
+    const { getEnv } = await import('../src/lib/env.js');
+
+    getEnv();
+
+    expect(process.env.DATABASE_URL).toBe('postgresql://postgres:postgres@localhost:5432/sub_next');
+  });
+
   it('falls back to an explicit DATABASE_URL when split database settings are absent', async () => {
+    process.env.DATABASE_HOST = '';
+    process.env.DATABASE_PORT = '';
+    process.env.DATABASE_NAME = '';
+    process.env.DATABASE_USER = '';
+    process.env.DATABASE_PASSWORD = '';
     process.env.DATABASE_URL = 'postgresql://demo:secret@db.internal:5433/demo_db';
 
     const { getEnv } = await import('../src/lib/env.js');
